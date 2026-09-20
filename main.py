@@ -29,8 +29,7 @@ TOKEN = os.environ.get("TOKEN")
 bot = telebot.TeleBot(TOKEN)
 
 # ⚠️ ضع هنا رقم الآيدي الخاص بك على تيليغرام
-ADMIN_ID = 1632433018
-
+ADMIN_ID = t.me/Ali00700Ali
 MERCHANT_ID = os.environ.get("3099259112049353")
 API_SECRET_KEY = os.environ.get("0077")
 
@@ -299,8 +298,9 @@ def callback_handler(call):
         parts = call.data.split("_")
         game = parts[2]
         package = parts[3]
-        price = float(parts[4])
-        
+        price = price = float(parts[4]))
+        send_order_to_admin(call.message, f"لعبة: {game} - باقة: {package}", price)
+
         markup = InlineKeyboardMarkup()
         markup.add(InlineKeyboardButton(f"💳 تأكيد ودفع ({price:,.0f} ل.س)", callback_data=f"pay_confirm_{game}_{package}_{price}"))
         markup.add(InlineKeyboardButton("🔙 إلغاء", callback_data="games_menu"))
@@ -419,3 +419,15 @@ def handle_link_command(message):
 
 print("Bot ZEUS is running successfully on Free Web Service tier...")
 bot.infinity_polling()
+def send_order_to_admin(message, service_name, amount):
+  user = message.from_user
+  notification_text = (
+      f"🚨 طلب تعبئة جديد وصل لمرحلة الدفع!\n\n"
+      f"👤 اسم المستخدم: {user.first_name}\n"
+      f"🆔 المعرف: @{user.username if user.username else 'لا يوجد'}\n"
+      f"🔢 الآيدي: `{user.id}`\n"
+      f"📦 الخدمة المطلوبة: {service_name}\n"
+      f"💰 المبلغ: {amount}\n"
+      f"💳 بانتظار إتمام الدفع عبر شام كاش..."
+  )
+  bot.send_message(ADMIN_ID, notification_text, parse_mode="Markdown")
