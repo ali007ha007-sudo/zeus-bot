@@ -57,7 +57,7 @@ def send_order_to_admin(message, service_name, amount, user_input):
     print(f'Error sending notification: {e}')
 
 
-# أمر البدء الرئيسي /start مع رسالة فريق ZEUS التعريفيّة
+# أمر البدء الرئيسي /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
   welcome_text = (
@@ -69,26 +69,23 @@ def send_welcome(message):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '🎮 1. شحن الألعاب (ببجي، فري فاير، كلاش، جواكر)',
+          '🎮 Games (PUBG, Free Fire, Clash, Jawaker)',
           callback_data='games_menu',
       ),
       InlineKeyboardButton(
-          '💬 2. شحن تطبيقات الدردشة (بيغو، سوبو، وغيرها)',
-          callback_data='chat_menu',
+          '💬 Chat Apps (Bigo, Soubu, etc.)', callback_data='chat_menu'
       ),
       InlineKeyboardButton(
-          '📄 3. دفع الفواتير (كهرباء، مياه، إنترنت)',
+          '📄 Bill Payments (Electricity, Water, Internet)',
           callback_data='bills_menu',
       ),
       InlineKeyboardButton(
-          '💳 4. تعبئة الرصيد (MTN / Syriatel)', callback_data='topup_menu'
+          '💳 Balance Top-up (MTN / Syriatel)', callback_data='topup_menu'
       ),
       InlineKeyboardButton(
-          '🌐 5. خدمات غوغل بلاي', callback_data='google_menu'
+          '🌐 Google Play Services', callback_data='google_menu'
       ),
-      InlineKeyboardButton(
-          '📞 6. تواصل مع فريق الدعم', callback_data='support_menu'
-      ),
+      InlineKeyboardButton('📞 Support Team', callback_data='support_menu'),
   )
   bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
 
@@ -103,26 +100,23 @@ def back_home(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '🎮 1. شحن الألعاب (ببجي، فري فاير، كلاش، جواكر)',
+          '🎮 Games (PUBG, Free Fire, Clash, Jawaker)',
           callback_data='games_menu',
       ),
       InlineKeyboardButton(
-          '💬 2. شحن تطبيقات الدردشة (بيغو، سوبو، وغيرها)',
-          callback_data='chat_menu',
+          '💬 Chat Apps (Bigo, Soubu, etc.)', callback_data='chat_menu'
       ),
       InlineKeyboardButton(
-          '📄 3. دفع الفواتير (كهرباء، مياه، إنترنت)',
+          '📄 Bill Payments (Electricity, Water, Internet)',
           callback_data='bills_menu',
       ),
       InlineKeyboardButton(
-          '💳 4. تعبئة الرصيد (MTN / Syriatel)', callback_data='topup_menu'
+          '💳 Balance Top-up (MTN / Syriatel)', callback_data='topup_menu'
       ),
       InlineKeyboardButton(
-          '🌐 5. خدمات غوغل بلاي', callback_data='google_menu'
+          '🌐 Google Play Services', callback_data='google_menu'
       ),
-      InlineKeyboardButton(
-          '📞 6. تواصل مع فريق الدعم', callback_data='support_menu'
-      ),
+      InlineKeyboardButton('📞 Support Team', callback_data='support_menu'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
@@ -133,142 +127,148 @@ def back_home(call):
   )
 
 
-# --- 1. قسم شحن الألعاب ---
+# --- قسم شحن الألعاب ---
 @bot.callback_query_handler(func=lambda call: call.data == 'games_menu')
 def games_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          'ببجي: 60 شدة ($1.00)', callback_data='select_PUBG_60_UC_$1.00'
+          'PUBG: 60 UC ($1.00)', callback_data='select_PUBG_60-UC_$1.00'
       ),
       InlineKeyboardButton(
-          'ببجي: 325 شدة ($5.04)', callback_data='select_PUBG_325_UC_$5.04'
+          'PUBG: 325 UC ($5.04)', callback_data='select_PUBG_325-UC_$5.04'
       ),
       InlineKeyboardButton(
-          'فري فاير: 100 جوهرة ($1.12)',
-          callback_data='select_FreeFire_100_Gems_$1.12',
+          'Free Fire: 100 Gems ($1.12)',
+          callback_data='select_FreeFire_100-Gems_$1.12',
       ),
       InlineKeyboardButton(
-          'كلاش: باقة أساسية ($5.04)', callback_data='select_Clash_Basic_$5.04'
+          'Clash: Basic Pack ($5.04)',
+          callback_data='select_Clash_Basic_$5.04',
       ),
       InlineKeyboardButton(
-          'الجواكر: توكنز ($5.60)', callback_data='select_Jawaker_Tokens_$5.60'
+          'Jawaker: Tokens ($5.60)',
+          callback_data='select_Jawaker_Tokens_$5.60',
       ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  bot.edit_message_text(
-      chat_id=call.message.chat.id,
-      message_id=call.message.message_id,
-      text='🎮 **اختر اللعبة والباقة المطلوبة (الأسعار شاملة 12% ربح):**',
-      reply_markup=markup,
-      parse_mode='Markdown',
-  )
-
-
-# --- 2. قسم تطبيقات الدردشة ---
-@bot.callback_query_handler(func=lambda call: call.data == 'chat_menu')
-def chat_menu(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'بيغو لايف: حزمة أساسية ($5.60)',
-          callback_data='select_Bigo_Basic_$5.60',
-      ),
-      InlineKeyboardButton(
-          'السوبو (Soubu): حزمة أساسية ($5.32)',
-          callback_data='select_Soubu_Basic_$5.32',
-      ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
       text=(
-          '💬 **اختر تطبيق الدردشة المطلوب (الأسعار شاملة 12% ربح):**'
+          '🎮 **Select Game & Package (Prices include 12% profit):**'
       ),
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- 3. قسم دفع الفواتير ---
+# --- قسم تطبيقات الدردشة ---
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_menu')
+def chat_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          'Bigo Live: Basic Pack ($5.60)',
+          callback_data='select_BigoLive_Basic_$5.60',
+      ),
+      InlineKeyboardButton(
+          'Soubu: Basic Pack ($5.32)',
+          callback_data='select_Soubu_Basic_$5.32',
+      ),
+      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text=(
+          '💬 **Select Chat App (Prices include 12% profit):**'
+      ),
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# --- قسم دفع الفواتير ---
 @bot.callback_query_handler(func=lambda call: call.data == 'bills_menu')
 def bills_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '⚡ دفع فاتورة الكهرباء', callback_data='select_Bill_Electricity_Custom'
+          '⚡ Electricity Bill', callback_data='select_Bill_Electricity'
       ),
       InlineKeyboardButton(
-          '💧 دفع فاتورة المياه', callback_data='select_Bill_Water_Custom'
+          '💧 Water Bill', callback_data='select_Bill_Water'
       ),
       InlineKeyboardButton(
-          '🌐 دفع فاتورة الإنترنت', callback_data='select_Bill_Internet_Custom'
+          '🌐 Internet Bill', callback_data='select_Bill_Internet'
       ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='📄 **اختر نوع الفاتورة المراد دفعها:**',
+      text='📄 **Select Bill Type:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- 4. قسم تعبئة الرصيد ---
+# --- قسم تعبئة الرصيد ---
 @bot.callback_query_handler(func=lambda call: call.data == 'topup_menu')
 def topup_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '📱 تعبئة رصيد MTN', callback_data='select_Topup_MTN_Custom'
+          '📱 MTN Top-up', callback_data='select_Topup_MTN'
       ),
       InlineKeyboardButton(
-          '📱 تعبئة رصيد Syriatel', callback_data='select_Topup_Syriatel_Custom'
+          '📱 Syriatel Top-up', callback_data='select_Topup_Syriatel'
       ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='💳 **اختر شبكة الاتصالات لتعبئة الرصيد:**',
+      text='💳 **Select Telecom Network:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- 5. قسم خدمات غوغل بلاي ---
+# --- قسم خدمات غوغل بلاي ---
 @bot.callback_query_handler(func=lambda call: call.data == 'google_menu')
 def google_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          'غوغل بلاي: بطاقة 10$ ($11.20)',
-          callback_data='select_GooglePlay_10$_$11.20',
+          'Google Play: $10 Card ($11.20)',
+          callback_data='select_GooglePlay_$10_$11.20',
       ),
       InlineKeyboardButton(
-          'غوغل بلاي: بطاقة 25$ ($28.00)',
-          callback_data='select_GooglePlay_25$_$28.00',
+          'Google Play: $25 Card ($28.00)',
+          callback_data='select_GooglePlay_$25_$28.00',
       ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='🌐 **اختر فئة بطاقة غوغل بلاي (شاملة 12% ربح):**',
+      text=(
+          '🌐 **Select Google Play Card (Prices include 12% profit):**'
+      ),
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- 6. قسم تواصل مع فريق الدعم ---
+# --- قسم تواصل مع فريق الدعم ---
 @bot.callback_query_handler(func=lambda call: call.data == 'support_menu')
 def support_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'))
+  markup.add(InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'))
   support_text = (
-      '📞 **فريق الدعم الفني - ZEUS**\n\n'
+      '📞 **Support Team - ZEUS**\n\n'
       'إذا واجهتك أي مشكلة أو استفسار، يسعدنا تواصلكم معنا عبر الأرقام التالية:\n\n'
       f'📱 `{SUPPORT_NUMBERS}`\n\n'
       'أو مراسلة الإدارة مباشرة.'
@@ -282,18 +282,18 @@ def support_menu(call):
   )
 
 
-# خطوة عامة لطلب المعلومات/الآيدي من العميل بناءً على الخدمة المختارة
+# خطوة طلب المعلومات/الآيدي من العميل بناءً على الخدمة المختارة
 @bot.callback_query_handler(func=lambda call: call.data.startswith('select_'))
 def ask_for_input(call):
   parts = call.data.split('_')
   service = parts[1]
-  package = parts[2]
-  price = parts[3] if len(parts) > 3 else 'يُحدد لاحقاً'
+  package = parts[2] if len(parts) > 2 else 'Custom'
+  price = parts[3] if len(parts) > 3 else 'Custom'
 
   msg = bot.send_message(
       call.message.chat.id,
-      f'📦 الخدمة المختارة: {service} - {package}\n'
-      f'💰 السعر الإجمالي: {price}\n\n'
+      f'📦 Service: {service} - {package}\n'
+      f'💰 Total Price: {price}\n\n'
       f'✍️ **يرجى إرسال رقم الهوية (ID)، رقم الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**',
       parse_mode='Markdown',
   )
@@ -302,30 +302,37 @@ def ask_for_input(call):
   )
 
 
-# استقبال مدخلات العميل، إرسال الإشعار لك، وإرسال الباركود للعميل
+# استقبال مدخلات العميل وإرسال الإشعار وصورة الباركود
 def process_user_order(message, service, package_details):
   user_input = message.text
   service_full_name = f'{service} - {package_details}'
 
-  # 1. إرسال إشعار تفصيلي لك على حسابك الشخصي فوراً
   send_order_to_admin(message, service_full_name, package_details, user_input)
 
-  # 2. تجهيز رسالة الدفع وإرسال الباركود ومعلومات المحفظة للعميل
   caption_text = (
       f'✅ **تم تسجيل طلبك بنجاح بواسطة فريق ZEUS!**\n\n'
       f'📦 الخدمة: {service_full_name}\n'
       f'📱 التفاصيل المرسلة: `{user_input}`\n\n'
-      f'💳 **يرجى إتمام عملية الدفع عن طريق التحويل إلى محفظة شام كاش التالية:**\n'
-      f'رقم المحفظة: `{SHAM_CASH_WALLET}`\n\n'
+      f'💳 **يرجى إتمام التحويل إلى محفظة شام كاش:**\n'
+      f'رقم المحفظة (اضغط للنسخ):\n'
+      f'`{SHAM_CASH_WALLET}`\n\n'
       f'أو قم بمسح الباركود أعلاه، ثم أرسل إيصال الدفع للإدارة لتنفيذ طلبك فوراً.'
   )
 
   try:
-    with open('sham_cash.jpg', 'rb') as photo:
-      bot.send_photo(
+    if os.path.exists('sham_cash.jpg'):
+      with open('sham_cash.jpg', 'rb') as photo:
+        bot.send_photo(
+            message.chat.id,
+            photo,
+            caption=caption_text,
+            parse_mode='Markdown',
+        )
+    else:
+      bot.send_message(
           message.chat.id,
-          photo,
-          caption=caption_text,
+          caption_text
+          + '\n\n*(ملاحظة: تأكد من رفع صورة sham_cash.jpg في مجلد المشروع)*',
           parse_mode='Markdown',
       )
   except Exception as e:
