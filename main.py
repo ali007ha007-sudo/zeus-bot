@@ -3,10 +3,26 @@ import telebot
 import sqlite3
 import requests
 import urllib3
+import threading
+from flask import Flask
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # تعطيل تحذيرات الأمان الخاصة بشهادة SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# إعداد خادم ويب مصغر لتلبية شروط الاستضافة المجانية على Render (منع خطأ Port timeout)
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "ZEUS Bot is running 24/7!"
+
+def run_web_server():
+    port = int(os.environ.get("PORT", 10000))
+    app.run(host='0.0.0.0', port=port)
+
+# تشغيل السيرفر في خلفية النظام
+threading.Thread(target=run_web_server).start()
 
 # جلب توكن البوت بأمان من إعدادات منصة Render
 TOKEN = os.environ.get("TOKEN")
@@ -209,14 +225,14 @@ def callback_handler(call):
             InlineKeyboardButton("🟢 Roblox (Robux)", callback_data="roblox_shop"),
             InlineKeyboardButton("🔙 القائمة الرئيسية", callback_data="back_home")
         )
-        bot.send_message(chat_id, "قسم شحن الألعاب والجواكر\nاختر اللعبة أو المنصة:", reply_markup=markup)
+        bot.send_message(chat_id, "قسم شحن الألعاب والجواكر (بزيادة 5% عن السعر الأساسي)\nاختر اللعبة أو المنصة:", reply_markup=markup)
 
     elif call.data == "jawaker_shop":
         markup = InlineKeyboardMarkup(row_width=1)
         markup.add(
-            InlineKeyboardButton("توكنز الجواكر - 50k (15,000 ل.س)", callback_data="buy_game_jawaker_50k_15000"),
-            InlineKeyboardButton("توكنز الجواكر - 150k (40,000 ل.س)", callback_data="buy_game_jawaker_150k_40000"),
-            InlineKeyboardButton("اشتراك VIP شهري (25,000 ل.س)", callback_data="buy_game_jawaker_VIP_25000"),
+            InlineKeyboardButton("توكنز الجواكر - 50k (15,750 ل.س)", callback_data="buy_game_jawaker_50k_15750"),
+            InlineKeyboardButton("توكنز الجواكر - 150k (42,000 ل.س)", callback_data="buy_game_jawaker_150k_42000"),
+            InlineKeyboardButton("اشتراك VIP شهري (26,250 ل.س)", callback_data="buy_game_jawaker_VIP_26250"),
             InlineKeyboardButton("🔙 رجوع للألعاب", callback_data="games_menu")
         )
         bot.send_message(chat_id, "شحن توكنز واشتراكات الجواكر (Jawaker)\nاختر الباقة المطلوبة:", reply_markup=markup)
@@ -224,9 +240,9 @@ def callback_handler(call):
     elif call.data == "pubg_shop":
         markup = InlineKeyboardMarkup(row_width=2)
         markup.add(
-            InlineKeyboardButton("60 شدة (5,000 ل.س)", callback_data="buy_game_pubg_60_5000"),
-            InlineKeyboardButton("325 شدة (25,000 ل.س)", callback_data="buy_game_pubg_325_25000"),
-            InlineKeyboardButton("660 شدة (50,000 ل.س)", callback_data="buy_game_pubg_660_50000"),
+            InlineKeyboardButton("60 شدة (5,250 ل.س)", callback_data="buy_game_pubg_60_5250"),
+            InlineKeyboardButton("325 شدة (26,250 ل.س)", callback_data="buy_game_pubg_325_26250"),
+            InlineKeyboardButton("660 شدة (52,500 ل.س)", callback_data="buy_game_pubg_660_52500"),
             InlineKeyboardButton("🔙 رجوع للألعاب", callback_data="games_menu")
         )
         bot.send_message(chat_id, "شحن PUBG Mobile\nاختر الباقة المطلوبة:", reply_markup=markup)
@@ -234,8 +250,8 @@ def callback_handler(call):
     elif call.data == "freefire_shop":
         markup = InlineKeyboardMarkup(row_width=2)
         markup.add(
-            InlineKeyboardButton("100 جوهرة (4,500 ل.س)", callback_data="buy_game_ff_100_4500"),
-            InlineKeyboardButton("310 جوهرة (14,000 ل.س)", callback_data="buy_game_ff_310_14000"),
+            InlineKeyboardButton("100 جوهرة (4,725 ل.س)", callback_data="buy_game_ff_100_4725"),
+            InlineKeyboardButton("310 جوهرة (14,700 ل.س)", callback_data="buy_game_ff_310_14700"),
             InlineKeyboardButton("🔙 رجوع للألعاب", callback_data="games_menu")
         )
         bot.send_message(chat_id, "شحن Free Fire\nاختر الباقة المطلوبة:", reply_markup=markup)
@@ -243,8 +259,8 @@ def callback_handler(call):
     elif call.data == "cod_shop":
         markup = InlineKeyboardMarkup(row_width=2)
         markup.add(
-            InlineKeyboardButton("80 CP (6,000 ل.س)", callback_data="buy_game_cod_80_6000"),
-            InlineKeyboardButton("420 CP (30,000 ل.س)", callback_data="buy_game_cod_420_30000"),
+            InlineKeyboardButton("80 CP (6,300 ل.س)", callback_data="buy_game_cod_80_6300"),
+            InlineKeyboardButton("420 CP (31,500 ل.س)", callback_data="buy_game_cod_420_31500"),
             InlineKeyboardButton("🔙 رجوع للألعاب", callback_data="games_menu")
         )
         bot.send_message(chat_id, "شحن Call of Duty\nاختر الباقة المطلوبة:", reply_markup=markup)
@@ -252,8 +268,8 @@ def callback_handler(call):
     elif call.data == "roblox_shop":
         markup = InlineKeyboardMarkup(row_width=2)
         markup.add(
-            InlineKeyboardButton("400 Robux (18,000 ل.س)", callback_data="buy_game_roblox_400_18000"),
-            InlineKeyboardButton("800 Robux (35,000 ل.س)", callback_data="buy_game_roblox_800_35000"),
+            InlineKeyboardButton("400 Robux (18,900 ل.س)", callback_data="buy_game_roblox_400_18900"),
+            InlineKeyboardButton("800 Robux (36,750 ل.س)", callback_data="buy_game_roblox_800_36750"),
             InlineKeyboardButton("🔙 رجوع للألعاب", callback_data="games_menu")
         )
         bot.send_message(chat_id, "شحن Roblox\nاختر الباقة المطلوبة:", reply_markup=markup)
@@ -375,7 +391,7 @@ def callback_handler(call):
         bot.send_message(chat_id, "الرجاء إرسال رقم العداد أو الاشتراك الكهربائي:")
 
     elif call.data == "support":
-        bot.send_message(chat_id, "للتواصل المباشر مع الدعم الفني لمنصة ZEUS:\nرقم التواصل: 0951984521")
+        bot.send_message(chat_id, f"للتواصل المباشر مع الدعم الفني لمنصة ZEUS:\nرقم التواصل: 0951984521")
 
     elif call.data == "back_home":
         send_welcome(call.message)
@@ -401,5 +417,5 @@ def handle_link_command(message):
     else:
         bot.reply_to(message, "يرجى كتابة الرقم بعد الأمر بشكل صحيح.\nمثال: /link 0930000000")
 
-print("Bot ZEUS is running successfully with all fixes applied...")
+print("Bot ZEUS is running successfully on Free Web Service tier...")
 bot.infinity_polling()
