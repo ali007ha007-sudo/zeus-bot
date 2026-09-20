@@ -31,9 +31,9 @@ bot = telebot.TeleBot(TOKEN)
 # ⚠️ ضع هنا رقم الآيدي الخاص بك على تيليغرام
 ADMIN_ID = 1632433018
 
-ALSHAM_CASH_API_URL = "https://api.alshamcash.com/v1/pay"
-MERCHANT_ID = "3099259112049353"
-API_SECRET_KEY = "0077" 
+MERCHANT_ID = os.environ.get("3099259112049353")
+API_SECRET_KEY = os.environ.get("0077")
+
 
 def init_db():
     conn = sqlite3.connect('zeus_bot.db')
