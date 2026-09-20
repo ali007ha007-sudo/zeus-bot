@@ -32,8 +32,8 @@ bot = telebot.TeleBot(TOKEN)
 ADMIN_ID = 1632433018
 
 ALSHAM_CASH_API_URL = "https://api.alshamcash.com/v1/pay"
-MERCHANT_ID = "293918375fc8b32d10496d55ab146a24"
-API_SECRET_KEY = "YOUR_REAL_API_SECRET_KEY_HERE" 
+MERCHANT_ID = "3099259112049353"
+API_SECRET_KEY = "0077" 
 
 def init_db():
     conn = sqlite3.connect('zeus_bot.db')
