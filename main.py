@@ -60,7 +60,7 @@ def send_order_to_admin(message, service_name, user_input):
       f'🔢 الآيدي: `{user.id}`\n'
       f'📱 الحساب أو المعلومات المدخلة: `{user_input}`\n'
       f'📦 الخدمة المطلوبة: {service_name}\n\n'
-      f'👉 بانتظار إتمام العميل للتحويل وإرسال صورة الإيصال.'
+      f'👉 بانتظار إتمام العميل للتحويل وإرسال إشعار أو رقم عملية التحويل.'
   )
   try:
     bot.send_message(ADMIN_ID, notification_text, parse_mode='Markdown')
@@ -68,10 +68,9 @@ def send_order_to_admin(message, service_name, user_input):
     print(f'Error sending notification: {e}')
 
 
-# 📸 استقبال صور إيصالات الدفع من العملاء وتحويلها للإدارة فوراً
+# 📸 استقبال صور إيصالات الدفع (سكرين شوت) من العملاء وتحويلها للإدارة فوراً
 @bot.message_handler(content_types=['photo'])
 def handle_client_photo(message):
-  # عدم معالجة صور الأدمن نفسه إن أرسل شيئاً
   if message.from_user.id == ADMIN_ID:
     return
 
@@ -79,7 +78,7 @@ def handle_client_photo(message):
   photo_file_id = message.photo[-1].file_id
 
   caption = (
-      f'📸 **إيصال دفع جديد (سكرين شوت) مرسل من عميل!**\n\n'
+      f'📸 **إيصال دفع جديد (صورة) مرسل من عميل!**\n\n'
       f'👤 اسم العميل: {user.first_name}\n'
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
       f'🔢 الآيدي: `{user.id}`\n\n'
@@ -87,7 +86,6 @@ def handle_client_photo(message):
   )
 
   try:
-    # إرسال الصورة مباشرة إلى حساب الأدمن مع التفاصيل
     bot.send_photo(
         ADMIN_ID,
         photo_file_id,
@@ -95,7 +93,6 @@ def handle_client_photo(message):
         reply_markup=get_persistent_keyboard(),
         parse_mode='Markdown',
     )
-    # تأكيد الاستلام للعميل
     bot.reply_to(
         message,
         '✅ **تم استلام إيصال الدفع بنجاح!**\nجاري التحقق من قبل الإدارة وتنفيذ طلبك'
@@ -104,7 +101,49 @@ def handle_client_photo(message):
         parse_mode='Markdown',
     )
   except Exception as e:
-    print(f'Error forwarding payment receipt: {e}')
+    print(f'Error forwarding payment receipt photo: {e}')
+
+
+# 💳 استقبال أرقام عمليات التحويل أو نصوص إشعارات شام كاش من العملاء وتحويلها فوراً
+@bot.message_handler(
+    content_types=['text'],
+    func=lambda message: message.from_user.id != ADMIN_ID
+    and message.text
+    not in [
+        '🏠 القائمة الرئيسية / Main Menu',
+        '📞 الدعم الفني / Support',
+        '/start',
+    ],
+)
+def handle_client_text_receipt(message):
+  user = message.from_user
+  text_content = message.text
+
+  notification_text = (
+      f'💰 **إشعار دفع / رقم عملية تحويل مرسل كنص من عميل!**\n\n'
+      f'👤 اسم العميل: {user.first_name}\n'
+      f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
+      f'🔢 الآيدي: `{user.id}`\n\n'
+      f'📝 **النص أو رقم العملية المرسل:**\n`{text_content}`\n\n'
+      f'👉 يرجى مطابقة رقم العملية مع حساب شام كاش لتأكيد التحويل.'
+  )
+
+  try:
+    bot.send_message(
+        ADMIN_ID,
+        notification_text,
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
+    )
+    bot.reply_to(
+        message,
+        '✅ **تم استلام رقم العملية / إشعار الدفع بنجاح!**\nجاري التحقق من قبل الإدارة وتنفيذ طلبك'
+        ' في أقرب وقت ❤️',
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
+    )
+  except Exception as e:
+    print(f'Error forwarding text receipt: {e}')
 
 
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
@@ -716,7 +755,7 @@ def process_user_order(message, service_name):
       f'💳 **يرجى إتمام التحويل إلى محفظة شام كاش:**\n'
       f'رقم المحفظة (اضغط للنسخ):\n'
       f'`{SHAM_CASH_WALLET}`\n\n'
-      f'📸 **بعد إتمام التحويل، يرجى إرسال صورة إيصال الدفع (سكرين شوت) هنا في المحادثة** لكي تصل إلى الإدارة فوراً وتنفيذ طلبك.'
+      f'📝 **بعد إتمام التحويل، يرجى إرسال رقم عملية التحويل أو نص الإشعار هنا في المحادثة** (أو صورة إيصال إن وُجدت) لكي يصل إلى الإدارة فوراً وتنفيذ طلبك.'
   )
 
   try:
@@ -732,8 +771,7 @@ def process_user_order(message, service_name):
     else:
       bot.send_message(
           message.chat.id,
-          caption_text
-          + '\n\n*(ملاحظة: تأكد من رفع صورة sham_cash.jpg في مجلد المشروع)*',
+          caption_text,
           reply_markup=get_persistent_keyboard(),
           parse_mode='Markdown',
       )
