@@ -29,7 +29,7 @@ TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 
 # معرف حسابك الشخصي لتلقي إشعارات الطلبات
-ADMIN_ID = '@Ali00700Ali'
+ADMIN_ID = 1632433018
 
 # رقم محفظة شام كاش الخاصة بك
 SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
