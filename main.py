@@ -1,9 +1,10 @@
 import os
 import threading
 import time
-import requests
 import urllib3
+from bs4 import BeautifulSoup
 from flask import Flask
+import requests
 import telebot
 from telebot.types import (
     InlineKeyboardButton,
@@ -14,6 +15,66 @@ from telebot.types import (
 
 # تعطيل تحذيرات الأمان الخاصة بـ SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+# متغير لتخزين سعر صرف الدولار الحالي (يتم تحديثه تلقائياً من sp-today.com)
+USD_TO_SYP_RATE = 15000.0  # قيمة افتراضية أولية لحين جلب السعر الفعلي
+
+
+def update_exchange_rates():
+  global USD_TO_SYP_RATE
+  while True:
+    try:
+      url = 'https://sp-today.com/'
+      headers = {
+          'User-Agent': (
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+              ' (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+          )
+      }
+      response = requests.get(url, headers=headers, timeout=10, verify=False)
+
+      if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table_rows = soup.find_all('tr')
+        for row in table_rows:
+          cols = row.find_all('td')
+          if len(cols) >= 3:
+            name = cols[0].get_text(strip=True)
+            if 'دولار' in name:
+              price_text = cols[1].get_text(strip=True)
+              clean_price = (
+                  price_text.replace(',', '')
+                  .replace('ل.س', '')
+                  .replace('SYP', '')
+                  .strip()
+              )
+              import re
+
+              nums = re.findall(r'\d+\.?\d*', clean_price)
+              if nums:
+                USD_TO_SYP_RATE = float(nums[0])
+                print(
+                    f'✅ تم تحديث سعر صرف الدولار بنجاح من SP-Today:'
+                    f' {USD_TO_SYP_RATE}'
+                )
+                break
+    except Exception as e:
+      print(f'❌ حدث خطأ أثناء جلب سعر الصرف من SP-Today: {e}')
+
+    # الانتظار لمدة ساعتين (7200 ثانية) قبل التحديث القادم
+    time.sleep(7200)
+
+
+# تشغيل خيط تحديث الأسعار في الخلفية
+threading.Thread(target=update_exchange_rates, daemon=True).start()
+
+
+def get_syp_price(usd_price):
+  """دالة لتحويل السعر من الدولار إلى الليرة السورية بناءً على السعر المحدث"""
+  global USD_TO_SYP_RATE
+  syp_amount = int(usd_price * USD_TO_SYP_RATE)
+  return f'{syp_amount:,} ل.س'
+
 
 # إعداد خادم ويب مصغر لاستضافة Render ولضمان عمل البوت 24/7
 app = Flask('')
@@ -40,44 +101,6 @@ ADMIN_ID = 1632433018
 
 # رقم محفظة شام كاش الخاصة بك
 SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
-
-# --- نظام تحديث سعر الصرف تلقائياً كل ساعتين ---
-USD_TO_SYP_RATE = (
-    15000.0  # قيمة افتراضية أولية، يتم تحديثها تلقائياً من الإنترنت
-)
-
-
-def update_exchange_rate():
-  global USD_TO_SYP_RATE
-  while True:
-    try:
-      # جلب أسعار الصرف العالمية (USD كعملة أساس)
-      response = requests.get('https://open.er-api.com/v6/latest/USD', timeout=10)
-      if response.status_code == 200:
-        data = response.json()
-        rates = data.get('rates', {})
-        if 'SYP' in rates:
-          USD_TO_SYP_RATE = float(rates['SYP'])
-          print(
-              f'✅ تم تحديث سعر صرف الدولار مقابل الليرة السورية بنجاح:'
-              f' {USD_TO_SYP_RATE}'
-          )
-    except Exception as e:
-      print(f'❌ خطأ أثناء تحديث سعر الصرف: {e}')
-
-    # الانتظار لمدة ساعتين (7200 ثانية) قبل التحديث القادم
-    time.sleep(7200)
-
-
-# بدء خيط التحديث التلقائي في الخلفية
-threading.Thread(target=update_exchange_rate, daemon=True).start()
-
-
-def get_syp_price(usd_price):
-  """دالة لتحويل السعر من الدولار إلى الليرة السورية وتنسيقه مع الفواصل"""
-  global USD_TO_SYP_RATE
-  syp_amount = int(usd_price * USD_TO_SYP_RATE)
-  return f'{syp_amount:,} ل.س'
 
 
 # دالة لوحة المفاتيح الثابتة (تظهر دائماً أسفل محادثة العميل)
@@ -217,8 +240,8 @@ def send_welcome(message):
       'اهلا بكم في ⚡️ **ZEUS-ECHANCE-BOT** ⚡️ للخدمات الرقمية الشاملة\n\n'
       'نحن فريق من الأشخاص يمتلك الخبرة لنقدم لك كافه خدمات الشحن والدفع الإلكتروني'
       ' بكافة انواعة بشكل آمن وسريع وبدقة عالية من الاحترافية ❤️\n\n'
-      '📌 **ملاحظة:** الأسعار تظهر بالدولار والليرة السورية وتتحدث تلقائياً كل'
-      ' ساعتين.\n\n'
+      '📌 **ملاحظة:** الأسعار تتحدث تلقائياً وتظهر بالدولار والليرة'
+      ' السورية.\n\n'
       'يرجى إختيار القسم المطلوب:'
   )
 
@@ -369,19 +392,19 @@ def game_packages(call):
   elif game == 'freefire':
     markup.add(
         InlineKeyboardButton(
-            f'Free Fire: 110 جوهرة | $1.5 ({get_syp_price(1.5)})',
+            f'Free Fire: 100+10 جوهرة | $1.5 ({get_syp_price(1.5)})',
             callback_data='order_FreeFire_110_Gems_$1.5',
         ),
         InlineKeyboardButton(
-            f'Free Fire: 231 جوهرة | $2.5 ({get_syp_price(2.5)})',
+            f'Free Fire: 210+21 جوهرة | $2.5 ({get_syp_price(2.5)})',
             callback_data='order_FreeFire_231_Gems_$2.5',
         ),
         InlineKeyboardButton(
-            f'Free Fire: 583 جوهرة | $5.8 ({get_syp_price(5.8)})',
+            f'Free Fire: 530+53 جوهرة | $5.8 ({get_syp_price(5.8)})',
             callback_data='order_FreeFire_583_Gems_$5.8',
         ),
         InlineKeyboardButton(
-            f'Free Fire: 1200 جوهرة | $11 ({get_syp_price(11)})',
+            f'Free Fire: 1080+120 جوهرة | $11 ({get_syp_price(11)})',
             callback_data='order_FreeFire_1200_Gems_$11',
         ),
         InlineKeyboardButton(
@@ -440,7 +463,7 @@ def game_packages(call):
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text=f'🎮 **حزم قسم الألعاب (بالدولار والليرة السورية):**',
+      text=f'🎮 **حزم قسم الألعاب (تظهر بالدولار والليرة السورية):**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
@@ -628,43 +651,45 @@ def various_menu(call):
       ),
       InlineKeyboardButton('⭐ نجوم تلغرام', callback_data='order_Telegram_Stars'),
       InlineKeyboardButton(
-          f'🤖 رد آلي FACEBOOK: شهر | $4.8 ({get_syp_price(4.8)})',
+          f'🤖 خدمة الرد الآلي FACEBOOK (1 شهر - $4.8) |'
+          f' {get_syp_price(4.8)}',
           callback_data='order_FB_Bot_1M_$4.8',
       ),
       InlineKeyboardButton(
-          f'🤖 رد آلي FACEBOOK: 3 أشهر | $9.6 ({get_syp_price(9.6)})',
+          f'🤖 خدمة الرد الآلي FACEBOOK (3 أشهر - $9.6) |'
+          f' {get_syp_price(9.6)}',
           callback_data='order_FB_Bot_3M_$9.6',
       ),
       InlineKeyboardButton(
-          f'🚫 فك حظر واتساب | $1.5 ({get_syp_price(1.5)})',
+          f'🚫 فك الحظر عن واتساب ($1.5) | {get_syp_price(1.5)}',
           callback_data='order_WhatsApp_Unban_$1.5',
       ),
       InlineKeyboardButton(
-          f'👥 متابعين FACEBOOK: 1K | $2 ({get_syp_price(2)})',
+          f'👥 متابعين FACEBOOK: 1000 متابع ($2) | {get_syp_price(2)}',
           callback_data='order_FB_1k_$2',
       ),
       InlineKeyboardButton(
-          f'👥 متابعين FACEBOOK: 5K | $9.8 ({get_syp_price(9.8)})',
+          f'👥 متابعين FACEBOOK: 5000 متابع ($9.8) | {get_syp_price(9.8)}',
           callback_data='order_FB_5k_$9.8',
       ),
       InlineKeyboardButton(
-          f'👥 متابعين FACEBOOK: 10K | $19 ({get_syp_price(19)})',
+          f'👥 متابعين FACEBOOK: 10,000 متابع ($19) | {get_syp_price(19)}',
           callback_data='order_FB_10k_$19',
       ),
       InlineKeyboardButton(
-          f'👥 متابعين FACEBOOK: 20K | $39 ({get_syp_price(39)})',
+          f'👥 متابعين FACEBOOK: 20,000 متابع ($39) | {get_syp_price(39)}',
           callback_data='order_FB_20k_$39',
       ),
       InlineKeyboardButton(
-          f'📸 متابعين INSTAGRAM: 1K | $4 ({get_syp_price(4)})',
+          f'📸 متابعين INSTAGRAM: 1000 متابع ($4) | {get_syp_price(4)}',
           callback_data='order_IG_1k_$4',
       ),
       InlineKeyboardButton(
-          f'📸 متابعين INSTAGRAM: 5K | $13 ({get_syp_price(13)})',
+          f'📸 متابعين INSTAGRAM: 5000 متابع ($13) | {get_syp_price(13)}',
           callback_data='order_IG_5k_$13',
       ),
       InlineKeyboardButton(
-          f'📸 متابعين INSTAGRAM: 10K | $24 ({get_syp_price(24)})',
+          f'📸 متابعين INSTAGRAM: 10,000 متابع ($24) | {get_syp_price(24)}',
           callback_data='order_IG_10k_$24',
       ),
       InlineKeyboardButton(
