@@ -3,7 +3,12 @@ import threading
 import urllib3
 from flask import Flask
 import telebot
-from telebot.types import InlineKeyboardButton, InlineKeyboardMarkup
+from telebot.types import (
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+    ReplyKeyboardMarkup,
+    KeyboardButton,
+)
 
 # تعطيل تحذيرات الأمان الخاصة بـ SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -28,17 +33,24 @@ threading.Thread(target=run_web_server).start()
 TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 
-# معرف حسابك الشخصي لتلقي إشعارات الطلبات
+# الآيدي الرقمي الصحيح الخاص بك لتلقي الطلبات
 ADMIN_ID = 1632433018
 
 # رقم محفظة شام كاش الخاصة بك
 SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 
-# أرقام الدعم الفني
-SUPPORT_NUMBERS = 'ALI: 0951984521 & ALAA: 0996743743'
+
+# دالة لوحة المفاتيح الثابتة (تظهر دائماً أسفل محادثة العميل)
+def get_persistent_keyboard():
+  markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
+  markup.add(
+      KeyboardButton('🏠 القائمة الرئيسية / Main Menu'),
+      KeyboardButton('📞 الدعم الفني / Support'),
+  )
+  return markup
 
 
-# دالة إرسال تفاصيل الطلب إلى حسابك الشخصي مباشرة
+# دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
   notification_text = (
@@ -48,12 +60,75 @@ def send_order_to_admin(message, service_name, user_input):
       f'🔢 الآيدي: `{user.id}`\n'
       f'📱 الحساب أو المعلومات المدخلة: `{user_input}`\n'
       f'📦 الخدمة المطلوبة: {service_name}\n\n'
-      f'👉 بانتظار إتمام العميل للتحويل عبر شام كاش لتنفيذ الطلب.'
+      f'👉 بانتظار إتمام العميل للتحويل وإرسال صورة الإيصال.'
   )
   try:
     bot.send_message(ADMIN_ID, notification_text, parse_mode='Markdown')
   except Exception as e:
     print(f'Error sending notification: {e}')
+
+
+# 📸 استقبال صور إيصالات الدفع من العملاء وتحويلها للإدارة فوراً
+@bot.message_handler(content_types=['photo'])
+def handle_client_photo(message):
+  # عدم معالجة صور الأدمن نفسه إن أرسل شيئاً
+  if message.from_user.id == ADMIN_ID:
+    return
+
+  user = message.from_user
+  photo_file_id = message.photo[-1].file_id
+
+  caption = (
+      f'📸 **إيصال دفع جديد (سكرين شوت) مرسل من عميل!**\n\n'
+      f'👤 اسم العميل: {user.first_name}\n'
+      f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
+      f'🔢 الآيدي: `{user.id}`\n\n'
+      f'👉 يرجى التحقق من وصول المبلغ على محفظة شام كاش لتنفيذ الطلب.'
+  )
+
+  try:
+    # إرسال الصورة مباشرة إلى حساب الأدمن مع التفاصيل
+    bot.send_photo(
+        ADMIN_ID,
+        photo_file_id,
+        caption=caption,
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
+    )
+    # تأكيد الاستلام للعميل
+    bot.reply_to(
+        message,
+        '✅ **تم استلام إيصال الدفع بنجاح!**\nجاري التحقق من قبل الإدارة وتنفيذ طلبك'
+        ' في أقرب وقت ❤️',
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
+    )
+  except Exception as e:
+    print(f'Error forwarding payment receipt: {e}')
+
+
+# استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
+@bot.message_handler(
+    func=lambda message: message.text
+    in ['🏠 القائمة الرئيسية / Main Menu', '📞 الدعم الفني / Support']
+)
+def handle_persistent_buttons(message):
+  if message.text == '🏠 القائمة الرئيسية / Main Menu':
+    send_welcome(message)
+  elif message.text == '📞 الدعم الفني / Support':
+    support_text = (
+        '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
+        'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
+        '👤 **ALI:** `0951984521`\n'
+        '👤 **ALAA:** `0996743743`\n\n'
+        'نحن في خدمتكم دائماً ❤️'
+    )
+    bot.send_message(
+        message.chat.id,
+        support_text,
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
+    )
 
 
 # أمر البدء الرئيسي /start
@@ -98,6 +173,12 @@ def send_welcome(message):
       InlineKeyboardButton(
           '9️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
       ),
+  )
+
+  bot.send_message(
+      message.chat.id,
+      'تم تفعيل لوحة المفاتيح الخاصة بك 👇',
+      reply_markup=get_persistent_keyboard(),
   )
   bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
 
@@ -605,7 +686,6 @@ def support_menu(call):
 def handle_order_selection(call):
   service_name = call.data.replace('order_', '').replace('_', ' ')
 
-  # تخصيص رسالة الطلب حسب النوع
   if 'Recharge' in service_name or 'ISP' in service_name:
     prompt_text = (
         f'📦 الخدمة: {service_name}\n\n'
@@ -627,7 +707,6 @@ def handle_order_selection(call):
 def process_user_order(message, service_name):
   user_input = message.text
 
-  # إرسال إشعار فوري لحساب الإدارة
   send_order_to_admin(message, service_name, user_input)
 
   caption_text = (
@@ -637,7 +716,7 @@ def process_user_order(message, service_name):
       f'💳 **يرجى إتمام التحويل إلى محفظة شام كاش:**\n'
       f'رقم المحفظة (اضغط للنسخ):\n'
       f'`{SHAM_CASH_WALLET}`\n\n'
-      f'أو قم بمسح الباركود أعلاه، ثم أرسل إيصال الدفع للإدارة لتنفيذ طلبك فوراً.'
+      f'📸 **بعد إتمام التحويل، يرجى إرسال صورة إيصال الدفع (سكرين شوت) هنا في المحادثة** لكي تصل إلى الإدارة فوراً وتنفيذ طلبك.'
   )
 
   try:
@@ -647,6 +726,7 @@ def process_user_order(message, service_name):
             message.chat.id,
             photo,
             caption=caption_text,
+            reply_markup=get_persistent_keyboard(),
             parse_mode='Markdown',
         )
     else:
@@ -654,11 +734,15 @@ def process_user_order(message, service_name):
           message.chat.id,
           caption_text
           + '\n\n*(ملاحظة: تأكد من رفع صورة sham_cash.jpg في مجلد المشروع)*',
+          reply_markup=get_persistent_keyboard(),
           parse_mode='Markdown',
       )
   except Exception as e:
     bot.send_message(
-        message.chat.id, caption_text, parse_mode='Markdown'
+        message.chat.id,
+        caption_text,
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
     )
     print(f'Error sending QR photo: {e}')
 
