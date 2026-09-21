@@ -2,3 +2,4 @@ pyTelegramBotAPI
 requests
 urllib3
 flask
+beautifulsoup4
