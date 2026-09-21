@@ -14,7 +14,7 @@ app = Flask('')
 
 @app.route('/')
 def home():
-  return 'ZEUS Bot is running 24/7!'
+  return 'ZEUS-ECHANCE-BOT is running 24/7!'
 
 
 def run_web_server():
@@ -35,11 +35,11 @@ ADMIN_ID = '@Ali00700Ali'
 SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 
 # أرقام الدعم الفني
-SUPPORT_NUMBERS = '0951984521 & 0996743743'
+SUPPORT_NUMBERS = 'ALI: 0951984521 & ALAA: 0996743743'
 
 
 # دالة إرسال تفاصيل الطلب إلى حسابك الشخصي مباشرة
-def send_order_to_admin(message, service_name, amount, user_input):
+def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
   notification_text = (
       f'🚨 طلب جديد بانتظار التحويل والتنفيذ!\n\n'
@@ -47,8 +47,7 @@ def send_order_to_admin(message, service_name, amount, user_input):
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
       f'🔢 الآيدي: `{user.id}`\n'
       f'📱 الحساب أو المعلومات المدخلة: `{user_input}`\n'
-      f'📦 الخدمة المطلوبة: {service_name}\n'
-      f'💰 السعر الإجمالي (مع ربح 12%): {amount}\n\n'
+      f'📦 الخدمة المطلوبة: {service_name}\n\n'
       f'👉 بانتظار إتمام العميل للتحويل عبر شام كاش لتنفيذ الطلب.'
   )
   try:
@@ -61,31 +60,44 @@ def send_order_to_admin(message, service_name, amount, user_input):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
   welcome_text = (
-      '⚡ **أهلاً بك عزيزي العميل في بوت فريق ZEUS للخدمات الرقمية** ⚡\n\n'
-      'نحن فريق **ZEUS**، نمتلك الخبرة لنقدم لك كافة خدمات الشحن الإلكتروني والدفع الآمن بسرعة ودقة عالية.\n\n'
-      'يرجى اختيار القسم المطلوب من القائمة أدناه:'
+      'اهلا بكم في ⚡️ **ZEUS-ECHANCE-BOT** ⚡️ للخدمات الرقمية الشاملة\n\n'
+      'نحن فريق من الأشخاص يمتلك الخبرة لنقدم لك كافه خدمات الشحن والدفع الإلكتروني'
+      ' بكافة انواعة بشكل آمن وسريع وبدقة عالية من الاحترافية ❤️\n\n'
+      'يرجى إختيار القسم المطلوب:'
   )
 
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
+      InlineKeyboardButton('1️⃣ الألعاب / GAMES 🎮', callback_data='menu_games'),
       InlineKeyboardButton(
-          '🎮 Games (PUBG, Free Fire, Clash, Jawaker)',
-          callback_data='games_menu',
+          '2️⃣ التطبيقات الصوتية والدردشة / CHAT APP 💬',
+          callback_data='menu_chat',
       ),
       InlineKeyboardButton(
-          '💬 Chat Apps (Bigo, Soubu, etc.)', callback_data='chat_menu'
+          '3️⃣ تعبئة الرصيد / RECHARGE 💳', callback_data='menu_recharge'
       ),
       InlineKeyboardButton(
-          '📄 Bill Payments (Electricity, Water, Internet)',
-          callback_data='bills_menu',
+          '4️⃣ توثيق الحسابات / ACCOUNTS VERIFICATION 🔐',
+          callback_data='menu_verify',
       ),
       InlineKeyboardButton(
-          '💳 Balance Top-up (MTN / Syriatel)', callback_data='topup_menu'
+          '5️⃣ خدمات متنوعة / Various Services 🌐',
+          callback_data='menu_various',
       ),
       InlineKeyboardButton(
-          '🌐 Google Play Services', callback_data='google_menu'
+          '6️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️', callback_data='menu_vpn'
       ),
-      InlineKeyboardButton('📞 Support Team', callback_data='support_menu'),
+      InlineKeyboardButton(
+          '7️⃣ خدمات ويندوز / WINDOWS SERVICES 💻',
+          callback_data='menu_windows',
+      ),
+      InlineKeyboardButton(
+          '8️⃣ خدمات مزودين الانترنت / INTERNET SERVICES 🌐',
+          callback_data='menu_internet',
+      ),
+      InlineKeyboardButton(
+          '9️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
+      ),
   )
   bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
 
@@ -94,29 +106,41 @@ def send_welcome(message):
 @bot.callback_query_handler(func=lambda call: call.data == 'back_home')
 def back_home(call):
   welcome_text = (
-      '⚡ **القائمة الرئيسية - فريق ZEUS** ⚡\n\n'
-      'يرجى اختيار القسم المطلوب:'
+      '⚡ **القائمة الرئيسية - ZEUS-ECHANCE-BOT** ⚡\n\n'
+      'يرجى إختيار القسم المطلوب:'
   )
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
+      InlineKeyboardButton('1️⃣ الألعاب / GAMES 🎮', callback_data='menu_games'),
       InlineKeyboardButton(
-          '🎮 Games (PUBG, Free Fire, Clash, Jawaker)',
-          callback_data='games_menu',
+          '2️⃣ التطبيقات الصوتية والدردشة / CHAT APP 💬',
+          callback_data='menu_chat',
       ),
       InlineKeyboardButton(
-          '💬 Chat Apps (Bigo, Soubu, etc.)', callback_data='chat_menu'
+          '3️⃣ تعبئة الرصيد / RECHARGE 💳', callback_data='menu_recharge'
       ),
       InlineKeyboardButton(
-          '📄 Bill Payments (Electricity, Water, Internet)',
-          callback_data='bills_menu',
+          '4️⃣ توثيق الحسابات / ACCOUNTS VERIFICATION 🔐',
+          callback_data='menu_verify',
       ),
       InlineKeyboardButton(
-          '💳 Balance Top-up (MTN / Syriatel)', callback_data='topup_menu'
+          '5️⃣ خدمات متنوعة / Various Services 🌐',
+          callback_data='menu_various',
       ),
       InlineKeyboardButton(
-          '🌐 Google Play Services', callback_data='google_menu'
+          '6️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️', callback_data='menu_vpn'
       ),
-      InlineKeyboardButton('📞 Support Team', callback_data='support_menu'),
+      InlineKeyboardButton(
+          '7️⃣ خدمات ويندوز / WINDOWS SERVICES 💻',
+          callback_data='menu_windows',
+      ),
+      InlineKeyboardButton(
+          '8️⃣ خدمات مزودين الانترنت / INTERNET SERVICES 🌐',
+          callback_data='menu_internet',
+      ),
+      InlineKeyboardButton(
+          '9️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
+      ),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
@@ -127,151 +151,442 @@ def back_home(call):
   )
 
 
-# --- قسم شحن الألعاب ---
-@bot.callback_query_handler(func=lambda call: call.data == 'games_menu')
+# --- 1. قسم الألعاب / GAMES ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_games')
 def games_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
-      InlineKeyboardButton(
-          'PUBG: 60 UC ($1.00)', callback_data='select_PUBG_60-UC_$1.00'
-      ),
-      InlineKeyboardButton(
-          'PUBG: 325 UC ($5.04)', callback_data='select_PUBG_325-UC_$5.04'
-      ),
-      InlineKeyboardButton(
-          'Free Fire: 100 Gems ($1.12)',
-          callback_data='select_FreeFire_100-Gems_$1.12',
-      ),
-      InlineKeyboardButton(
-          'Clash: Basic Pack ($5.04)',
-          callback_data='select_Clash_Basic_$5.04',
-      ),
-      InlineKeyboardButton(
-          'Jawaker: Tokens ($5.60)',
-          callback_data='select_Jawaker_Tokens_$5.60',
-      ),
-      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
+      InlineKeyboardButton('PUBG Mobile 🎮', callback_data='game_pubg'),
+      InlineKeyboardButton('Free Fire 🔥', callback_data='game_freefire'),
+      InlineKeyboardButton('Jawaker 🃏', callback_data='game_jawaker'),
+      InlineKeyboardButton('Clash of Clans 🏰', callback_data='game_clash'),
+      InlineKeyboardButton('Call of Duty 🎯', callback_data='game_cod'),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text=(
-          '🎮 **Select Game & Package (Prices include 12% profit):**'
-      ),
+      text='🎮 **اختر اللعبة المطلوبة:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- قسم تطبيقات الدردشة ---
-@bot.callback_query_handler(func=lambda call: call.data == 'chat_menu')
+@bot.callback_query_handler(func=lambda call: call.data.startswith('game_'))
+def game_packages(call):
+  game = call.data.split('_')[1]
+  markup = InlineKeyboardMarkup(row_width=1)
+
+  if game == 'pubg':
+    markup.add(
+        InlineKeyboardButton(
+            'PUBG: 60 شدة ($1)', callback_data='order_PUBG_60_UC_$1'
+        ),
+        InlineKeyboardButton(
+            'PUBG: 325 شدة ($5.5)', callback_data='order_PUBG_325_UC_$5.5'
+        ),
+        InlineKeyboardButton(
+            'PUBG: 660 شدة ($10.2)', callback_data='order_PUBG_660_UC_$10.2'
+        ),
+        InlineKeyboardButton(
+            'PUBG: 1800 شدة ($24.8)', callback_data='order_PUBG_1800_UC_$24.8'
+        ),
+        InlineKeyboardButton(
+            'PUBG: 3800 شدة ($49.7)', callback_data='order_PUBG_3800_UC_$49.7'
+        ),
+        InlineKeyboardButton(
+            '✨ طلب حزم وترقية وشعارات (تواصل مع الدعم)',
+            callback_data='menu_support',
+        ),
+    )
+  elif game == 'freefire':
+    markup.add(
+        InlineKeyboardButton(
+            'Free Fire: 100+10 جوهرة ($1.5)',
+            callback_data='order_FreeFire_110_Gems_$1.5',
+        ),
+        InlineKeyboardButton(
+            'Free Fire: 210+21 جوهرة ($2.5)',
+            callback_data='order_FreeFire_231_Gems_$2.5',
+        ),
+        InlineKeyboardButton(
+            'Free Fire: 530+53 جوهرة ($5.8)',
+            callback_data='order_FreeFire_583_Gems_$5.8',
+        ),
+        InlineKeyboardButton(
+            'Free Fire: 1080+120 جوهرة ($11)',
+            callback_data='order_FreeFire_1200_Gems_$11',
+        ),
+        InlineKeyboardButton(
+            '✨ طلب حزمة عضوية (تواصل مع الدعم)', callback_data='menu_support'
+        ),
+    )
+  elif game == 'jawaker':
+    markup.add(
+        InlineKeyboardButton(
+            'Jawaker: 10,000 جوهرة ($1.8)',
+            callback_data='order_Jawaker_10k_Gems_$1.8',
+        ),
+        InlineKeyboardButton(
+            'Jawaker: 20,000 جوهرة ($3.2)',
+            callback_data='order_Jawaker_20k_Gems_$3.2',
+        ),
+        InlineKeyboardButton(
+            '✨ طلب توكنز أسبوعي (تواصل مع الدعم)',
+            callback_data='menu_support',
+        ),
+    )
+  elif game == 'clash':
+    markup.add(
+        InlineKeyboardButton(
+            'Clash: 80 جوهرة ($2)', callback_data='order_Clash_80_Gems_$2'
+        ),
+        InlineKeyboardButton(
+            'Clash: 500 جوهرة ($8)', callback_data='order_Clash_500_Gems_$8'
+        ),
+        InlineKeyboardButton(
+            '✨ طلب المزيد (تواصل مع الدعم)', callback_data='menu_support'
+        ),
+    )
+  elif game == 'cod':
+    markup.add(
+        InlineKeyboardButton(
+            'Call of Duty: 30 CP ($0.8)', callback_data='order_COD_30_CP_$0.8'
+        ),
+        InlineKeyboardButton(
+            'Call of Duty: 80 CP ($2.1)', callback_data='order_COD_80_CP_$2.1'
+        ),
+        InlineKeyboardButton(
+            'Call of Duty: 320 CP ($7.5)',
+            callback_data='order_COD_320_CP_$7.5',
+        ),
+        InlineKeyboardButton(
+            '✨ طلب المزيد (تواصل مع الدعم)', callback_data='menu_support'
+        ),
+    )
+
+  markup.add(InlineKeyboardButton('🔙 رجوع', callback_data='menu_games'))
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text=f'🎮 **حزم قسم الألعاب:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# --- 2. التطبيقات الصوتية والدردشة / CHAT APP ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_chat')
 def chat_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
+      InlineKeyboardButton('Bigo Live 🔴', callback_data='chat_bigo'),
+      InlineKeyboardButton('Sool Chill 💬', callback_data='chat_sool'),
+      InlineKeyboardButton('Likee Live 💛', callback_data='order_Likee_Live'),
+      InlineKeyboardButton('Sugo Chat 💬', callback_data='order_Sugo_Chat'),
+      InlineKeyboardButton('Hony Jar 🍯', callback_data='order_Hony_Jar'),
+      InlineKeyboardButton('Lama Chat 🦙', callback_data='order_Lama_Chat'),
+      InlineKeyboardButton('Lggo Live 🟢', callback_data='order_Lggo_Live'),
       InlineKeyboardButton(
-          'Bigo Live: Basic Pack ($5.60)',
-          callback_data='select_BigoLive_Basic_$5.60',
+          'Taka Live Chat 🎙️', callback_data='order_Taka_Live'
+      ),
+      InlineKeyboardButton('Soul Chat 💫', callback_data='order_Soul_Chat'),
+      InlineKeyboardButton('Mico Live 💜', callback_data='order_Mico_Live'),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💬 **اختر التطبيق المطلوب:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_bigo')
+def bigo_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          'Bigo: 50 PC ($1)', callback_data='order_Bigo_50_PC_$1'
       ),
       InlineKeyboardButton(
-          'Soubu: Basic Pack ($5.32)',
-          callback_data='select_Soubu_Basic_$5.32',
+          'Bigo: 100 PC ($1.9)', callback_data='order_Bigo_100_PC_$1.9'
       ),
-      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
+      InlineKeyboardButton(
+          'Bigo: 200 PC ($3.8)', callback_data='order_Bigo_200_PC_$3.8'
+      ),
+      InlineKeyboardButton(
+          'Bigo: 500 PC ($11)', callback_data='order_Bigo_500_PC_$11'
+      ),
+      InlineKeyboardButton(
+          'Bigo: 1000 PC ($21)', callback_data='order_Bigo_1000_PC_$21'
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🔴 **حزم Bigo Live:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_sool')
+def sool_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          'Sool Chill: 1000 PC ($1.98)',
+          callback_data='order_Sool_1000_PC_$1.98',
+      ),
+      InlineKeyboardButton(
+          'Sool Chill: 2000 PC ($3.88)',
+          callback_data='order_Sool_2000_PC_$3.88',
+      ),
+      InlineKeyboardButton(
+          'Sool Chill: 3000 PC ($5.95)',
+          callback_data='order_Sool_3000_PC_$5.95',
+      ),
+      InlineKeyboardButton(
+          'Sool Chill: 4000 PC ($7.95)',
+          callback_data='order_Sool_4000_PC_$7.95',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💬 **حزم Sool Chill:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# --- 3. تعبئة الرصيد / RECHARGE ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_recharge')
+def recharge_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          '📱 Syriatel Recharge', callback_data='order_Recharge_Syriatel'
+      ),
+      InlineKeyboardButton(
+          '📱 MTN Syria Recharge', callback_data='order_Recharge_MTN'
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💳 **اختر الشبكة لتعبئة الرصيد:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# --- 4. توثيق الحسابات / ACCOUNTS VERIFICATION ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_verify')
+def verify_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          'YouTube: 1 شهر ($4.5)', callback_data='order_YouTube_1M_$4.5'
+      ),
+      InlineKeyboardButton(
+          'YouTube: 3 أشهر ($13)', callback_data='order_YouTube_3M_$13'
+      ),
+      InlineKeyboardButton(
+          'YouTube: 6 أشهر ($24)', callback_data='order_YouTube_6M_$24'
+      ),
+      InlineKeyboardButton(
+          'YouTube: 12 شهر ($44)', callback_data='order_YouTube_12M_$44'
+      ),
+      InlineKeyboardButton(
+          'Telegram: 3 أشهر ($15)', callback_data='order_Telegram_3M_$15'
+      ),
+      InlineKeyboardButton(
+          'Telegram: 6 أشهر ($22)', callback_data='order_Telegram_6M_$22'
+      ),
+      InlineKeyboardButton(
+          'Telegram: 12 شهر ($35)', callback_data='order_Telegram_12M_$35'
+      ),
+      InlineKeyboardButton(
+          'Snapchat: 3 أشهر ($7)', callback_data='order_Snapchat_3M_$7'
+      ),
+      InlineKeyboardButton(
+          'Snapchat: 6 أشهر ($12)', callback_data='order_Snapchat_6M_$12'
+      ),
+      InlineKeyboardButton(
+          'Snapchat: 12 شهر ($22)', callback_data='order_Snapchat_12M_$22'
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🔐 **خدمات توثيق الحسابات:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# --- 5. خدمات متنوعة / Various Services ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_various')
+def various_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          '📁 شراء مساحة تخزين GOOGLE', callback_data='order_Google_Storage'
+      ),
+      InlineKeyboardButton('⭐ نجوم تلغرام', callback_data='order_Telegram_Stars'),
+      InlineKeyboardButton(
+          '🤖 خدمة الرد الآلي FACEBOOK (1 شهر - $4.8)',
+          callback_data='order_FB_Bot_1M_$4.8',
+      ),
+      InlineKeyboardButton(
+          '🤖 خدمة الرد الآلي FACEBOOK (3 أشهر - $9.6)',
+          callback_data='order_FB_Bot_3M_$9.6',
+      ),
+      InlineKeyboardButton(
+          '🚫 فك الحظر عن واتساب ($1.5)', callback_data='order_WhatsApp_Unban_$1.5'
+      ),
+      InlineKeyboardButton(
+          '👥 متابعين FACEBOOK: 1000 متابع ($2)',
+          callback_data='order_FB_1k_$2',
+      ),
+      InlineKeyboardButton(
+          '👥 متابعين FACEBOOK: 5000 متابع ($9.8)',
+          callback_data='order_FB_5k_$9.8',
+      ),
+      InlineKeyboardButton(
+          '👥 متابعين FACEBOOK: 10,000 متابع ($19)',
+          callback_data='order_FB_10k_$19',
+      ),
+      InlineKeyboardButton(
+          '👥 متابعين FACEBOOK: 20,000 متابع ($39)',
+          callback_data='order_FB_20k_$39',
+      ),
+      InlineKeyboardButton(
+          '📸 متابعين INSTAGRAM: 1000 متابع ($4)',
+          callback_data='order_IG_1k_$4',
+      ),
+      InlineKeyboardButton(
+          '📸 متابعين INSTAGRAM: 5000 متابع ($13)',
+          callback_data='order_IG_5k_$13',
+      ),
+      InlineKeyboardButton(
+          '📸 متابعين INSTAGRAM: 10,000 متابع ($24)',
+          callback_data='order_IG_10k_$24',
+      ),
+      InlineKeyboardButton(
+          '💬 تفاعل مجموعات الواتساب والمزيد', callback_data='menu_support'
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🌐 **الخدمات المتنوعة:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# --- 6. خدمة تخطي الموقع VPN (بروكسي) ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_vpn')
+def vpn_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          '📞 تواصل مع الدعم لطلب البروكسي والمفاتيح',
+          callback_data='menu_support',
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
       text=(
-          '💬 **Select Chat App (Prices include 12% profit):**'
+          '🛡️ **خدمة تخطي الموقع VPN (بروكسي):**\nيوجد بروكسي لأغلب المواقع'
+          ' العالمية مع المفاتيح وبأسعار مميزة يرجى التواصل مع فريق الدعم.'
       ),
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- قسم دفع الفواتير ---
-@bot.callback_query_handler(func=lambda call: call.data == 'bills_menu')
-def bills_menu(call):
+# --- 7. خدمات ويندوز / WINDOWS SERVICES ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_windows')
+def windows_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '⚡ Electricity Bill', callback_data='select_Bill_Electricity'
+          '🔑 تفعيل وتنشيط مفاتيح ويندوز',
+          callback_data='order_Windows_Activation',
       ),
       InlineKeyboardButton(
-          '💧 Water Bill', callback_data='select_Bill_Water'
+          '🔑 تفعيل وتنشيط مفاتيح أوفيس', callback_data='order_Office_Activation'
       ),
-      InlineKeyboardButton(
-          '🌐 Internet Bill', callback_data='select_Bill_Internet'
-      ),
-      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='📄 **Select Bill Type:**',
+      text='💻 **خدمات ويندوز وأوفيس:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- قسم تعبئة الرصيد ---
-@bot.callback_query_handler(func=lambda call: call.data == 'topup_menu')
-def topup_menu(call):
+# --- 8. خدمات مزودين الانترنت / INTERNET SERVICES ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_internet')
+def internet_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
+      InlineKeyboardButton('🌐 سوا (Sawa)', callback_data='order_ISP_Sawa'),
+      InlineKeyboardButton('🌐 رن نت (RunNet)', callback_data='order_ISP_RunNet'),
+      InlineKeyboardButton('🌐 آية (Aya)', callback_data='order_ISP_Aya'),
       InlineKeyboardButton(
-          '📱 MTN Top-up', callback_data='select_Topup_MTN'
+          '🌐 تكامل (Takamol)', callback_data='order_ISP_Takamol'
       ),
       InlineKeyboardButton(
-          '📱 Syriatel Top-up', callback_data='select_Topup_Syriatel'
+          '🌐 الجمعية السورية للمعلوماتية (SCS)', callback_data='order_ISP_SCS'
       ),
-      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
+      InlineKeyboardButton(
+          '🌐 السورية للاتصالات (Syrian Telecom)',
+          callback_data='order_ISP_SyrianTelecom',
+      ),
+      InlineKeyboardButton(
+          '🌐 الانترنت الهوائي (Wireless)',
+          callback_data='order_ISP_Wireless',
+      ),
+      InlineKeyboardButton(
+          '🌐 الانترنت العالمي (Global)', callback_data='order_ISP_Global'
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='💳 **Select Telecom Network:**',
+      text='🌐 **اختر مزود الانترنت المطلوب:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
 
 
-# --- قسم خدمات غوغل بلاي ---
-@bot.callback_query_handler(func=lambda call: call.data == 'google_menu')
-def google_menu(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'Google Play: $10 Card ($11.20)',
-          callback_data='select_GooglePlay_$10_$11.20',
-      ),
-      InlineKeyboardButton(
-          'Google Play: $25 Card ($28.00)',
-          callback_data='select_GooglePlay_$25_$28.00',
-      ),
-      InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'),
-  )
-  bot.edit_message_text(
-      chat_id=call.message.chat.id,
-      message_id=call.message.message_id,
-      text=(
-          '🌐 **Select Google Play Card (Prices include 12% profit):**'
-      ),
-      reply_markup=markup,
-      parse_mode='Markdown',
-  )
-
-
-# --- قسم تواصل مع فريق الدعم ---
-@bot.callback_query_handler(func=lambda call: call.data == 'support_menu')
+# --- 9. خدمة العملاء / SUPPORT TEAM ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_support')
 def support_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(InlineKeyboardButton('🔙 Main Menu', callback_data='back_home'))
+  markup.add(InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'))
   support_text = (
-      '📞 **Support Team - ZEUS**\n\n'
-      'إذا واجهتك أي مشكلة أو استفسار، يسعدنا تواصلكم معنا عبر الأرقام التالية:\n\n'
-      f'📱 `{SUPPORT_NUMBERS}`\n\n'
-      'أو مراسلة الإدارة مباشرة.'
+      '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
+      'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
+      '👤 **ALI:** `0951984521`\n'
+      '👤 **ALAA:** `0996743743`\n\n'
+      'نحن في خدمتكم دائماً ❤️'
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
@@ -282,36 +597,42 @@ def support_menu(call):
   )
 
 
-# خطوة طلب المعلومات/الآيدي من العميل بناءً على الخدمة المختارة
-@bot.callback_query_handler(func=lambda call: call.data.startswith('select_'))
-def ask_for_input(call):
-  parts = call.data.split('_')
-  service = parts[1]
-  package = parts[2] if len(parts) > 2 else 'Custom'
-  price = parts[3] if len(parts) > 3 else 'Custom'
+# معالجة الطلبات العامة وطلب البيانات من العميل
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith('order_')
+    or call.data.startswith('chat_')
+)
+def handle_order_selection(call):
+  service_name = call.data.replace('order_', '').replace('_', ' ')
+
+  # تخصيص رسالة الطلب حسب النوع
+  if 'Recharge' in service_name or 'ISP' in service_name:
+    prompt_text = (
+        f'📦 الخدمة: {service_name}\n\n'
+        f'✍️ **يرجى تزويدنا بالرقم أو كود التعبئة أو تفاصيل اشتراك الإنترنت المطلوبة في رسالة واحدة:**'
+    )
+  else:
+    prompt_text = (
+        f'📦 الخدمة المختارة: {service_name}\n\n'
+        f'✍️ **يرجى إرسال رقم الهوية (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
+    )
 
   msg = bot.send_message(
-      call.message.chat.id,
-      f'📦 Service: {service} - {package}\n'
-      f'💰 Total Price: {price}\n\n'
-      f'✍️ **يرجى إرسال رقم الهوية (ID)، رقم الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**',
-      parse_mode='Markdown',
+      call.message.chat.id, prompt_text, parse_mode='Markdown'
   )
-  bot.register_next_step_handler(
-      msg, process_user_order, service, f'{package} ({price})'
-  )
+  bot.register_next_step_handler(msg, process_user_order, service_name)
 
 
-# استقبال مدخلات العميل وإرسال الإشعار وصورة الباركود
-def process_user_order(message, service, package_details):
+# استقبال مدخلات العميل وإرسال الإشعار للإدارة وصورة الباركود ورقم المحفظة
+def process_user_order(message, service_name):
   user_input = message.text
-  service_full_name = f'{service} - {package_details}'
 
-  send_order_to_admin(message, service_full_name, package_details, user_input)
+  # إرسال إشعار فوري لحساب الإدارة
+  send_order_to_admin(message, service_name, user_input)
 
   caption_text = (
       f'✅ **تم تسجيل طلبك بنجاح بواسطة فريق ZEUS!**\n\n'
-      f'📦 الخدمة: {service_full_name}\n'
+      f'📦 الخدمة: {service_name}\n'
       f'📱 التفاصيل المرسلة: `{user_input}`\n\n'
       f'💳 **يرجى إتمام التحويل إلى محفظة شام كاش:**\n'
       f'رقم المحفظة (اضغط للنسخ):\n'
@@ -343,5 +664,5 @@ def process_user_order(message, service, package_details):
 
 
 if __name__ == '__main__':
-  print('Bot is running...')
+  print('ZEUS Bot is running...')
   bot.infinity_polling()
