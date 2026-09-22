@@ -39,6 +39,19 @@ ADMIN_ID = 1632433018
 # رقم محفظة شام كاش الخاصة بك
 SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 
+# ==========================================
+# 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
+# ==========================================
+USD_TO_SYP_RATE = (
+    14000  # 💡 يمكنك تغيير هذا الرقم في أي وقت حسب سعر السوق السوداء الحالي
+)
+
+
+def price_text(usd_amount):
+  """دالة لتوليد السعر بالدولار وما يعادلها بالليرة السورية تلقائياً مع فاصل الآلاف"""
+  syp_amount = int(usd_amount * USD_TO_SYP_RATE)
+  return f'${usd_amount} ({syp_amount:,} ل.س)'
+
 
 # دالة لوحة المفاتيح الثابتة (تظهر دائماً أسفل محادثة العميل)
 def get_persistent_keyboard():
@@ -300,19 +313,24 @@ def game_packages(call):
   if game == 'pubg':
     markup.add(
         InlineKeyboardButton(
-            'PUBG: 60 شدة ($1)', callback_data='order_PUBG_60_UC_$1'
+            f'PUBG: 60 شدة ({price_text(1)})',
+            callback_data='order_PUBG_60_UC_$1',
         ),
         InlineKeyboardButton(
-            'PUBG: 325 شدة ($5.5)', callback_data='order_PUBG_325_UC_$5.5'
+            f'PUBG: 325 شدة ({price_text(5.5)})',
+            callback_data='order_PUBG_325_UC_$5.5',
         ),
         InlineKeyboardButton(
-            'PUBG: 660 شدة ($10.2)', callback_data='order_PUBG_660_UC_$10.2'
+            f'PUBG: 660 شدة ({price_text(10.2)})',
+            callback_data='order_PUBG_660_UC_$10.2',
         ),
         InlineKeyboardButton(
-            'PUBG: 1800 شدة ($24.8)', callback_data='order_PUBG_1800_UC_$24.8'
+            f'PUBG: 1800 شدة ({price_text(24.8)})',
+            callback_data='order_PUBG_1800_UC_$24.8',
         ),
         InlineKeyboardButton(
-            'PUBG: 3800 شدة ($49.7)', callback_data='order_PUBG_3800_UC_$49.7'
+            f'PUBG: 3800 شدة ({price_text(49.7)})',
+            callback_data='order_PUBG_3800_UC_$49.7',
         ),
         InlineKeyboardButton(
             '✨ طلب حزم وترقية وشعارات (تواصل مع الدعم)',
@@ -322,19 +340,19 @@ def game_packages(call):
   elif game == 'freefire':
     markup.add(
         InlineKeyboardButton(
-            'Free Fire: 100+10 جوهرة ($1.5)',
+            f'Free Fire: 100+10 جوهرة ({price_text(1.5)})',
             callback_data='order_FreeFire_110_Gems_$1.5',
         ),
         InlineKeyboardButton(
-            'Free Fire: 210+21 جوهرة ($2.5)',
+            f'Free Fire: 210+21 جوهرة ({price_text(2.5)})',
             callback_data='order_FreeFire_231_Gems_$2.5',
         ),
         InlineKeyboardButton(
-            'Free Fire: 530+53 جوهرة ($5.8)',
+            f'Free Fire: 530+53 جوهرة ({price_text(5.8)})',
             callback_data='order_FreeFire_583_Gems_$5.8',
         ),
         InlineKeyboardButton(
-            'Free Fire: 1080+120 جوهرة ($11)',
+            f'Free Fire: 1080+120 جوهرة ({price_text(11)})',
             callback_data='order_FreeFire_1200_Gems_$11',
         ),
         InlineKeyboardButton(
@@ -344,11 +362,11 @@ def game_packages(call):
   elif game == 'jawaker':
     markup.add(
         InlineKeyboardButton(
-            'Jawaker: 10,000 جوهرة ($1.8)',
+            f'Jawaker: 10,000 جوهرة ({price_text(1.8)})',
             callback_data='order_Jawaker_10k_Gems_$1.8',
         ),
         InlineKeyboardButton(
-            'Jawaker: 20,000 جوهرة ($3.2)',
+            f'Jawaker: 20,000 جوهرة ({price_text(3.2)})',
             callback_data='order_Jawaker_20k_Gems_$3.2',
         ),
         InlineKeyboardButton(
@@ -359,10 +377,12 @@ def game_packages(call):
   elif game == 'clash':
     markup.add(
         InlineKeyboardButton(
-            'Clash: 80 جوهرة ($2)', callback_data='order_Clash_80_Gems_$2'
+            f'Clash: 80 جوهرة ({price_text(2)})',
+            callback_data='order_Clash_80_Gems_$2',
         ),
         InlineKeyboardButton(
-            'Clash: 500 جوهرة ($8)', callback_data='order_Clash_500_Gems_$8'
+            f'Clash: 500 جوهرة ({price_text(8)})',
+            callback_data='order_Clash_500_Gems_$8',
         ),
         InlineKeyboardButton(
             '✨ طلب المزيد (تواصل مع الدعم)', callback_data='menu_support'
@@ -371,13 +391,15 @@ def game_packages(call):
   elif game == 'cod':
     markup.add(
         InlineKeyboardButton(
-            'Call of Duty: 30 CP ($0.8)', callback_data='order_COD_30_CP_$0.8'
+            f'Call of Duty: 30 CP ({price_text(0.8)})',
+            callback_data='order_COD_30_CP_$0.8',
         ),
         InlineKeyboardButton(
-            'Call of Duty: 80 CP ($2.1)', callback_data='order_COD_80_CP_$2.1'
+            f'Call of Duty: 80 CP ({price_text(2.1)})',
+            callback_data='order_COD_80_CP_$2.1',
         ),
         InlineKeyboardButton(
-            'Call of Duty: 320 CP ($7.5)',
+            f'Call of Duty: 320 CP ({price_text(7.5)})',
             callback_data='order_COD_320_CP_$7.5',
         ),
         InlineKeyboardButton(
@@ -428,19 +450,24 @@ def bigo_packages(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          'Bigo: 50 PC ($1)', callback_data='order_Bigo_50_PC_$1'
+          f'Bigo: 50 PC ({price_text(1)})',
+          callback_data='order_Bigo_50_PC_$1',
       ),
       InlineKeyboardButton(
-          'Bigo: 100 PC ($1.9)', callback_data='order_Bigo_100_PC_$1.9'
+          f'Bigo: 100 PC ({price_text(1.9)})',
+          callback_data='order_Bigo_100_PC_$1.9',
       ),
       InlineKeyboardButton(
-          'Bigo: 200 PC ($3.8)', callback_data='order_Bigo_200_PC_$3.8'
+          f'Bigo: 200 PC ({price_text(3.8)})',
+          callback_data='order_Bigo_200_PC_$3.8',
       ),
       InlineKeyboardButton(
-          'Bigo: 500 PC ($11)', callback_data='order_Bigo_500_PC_$11'
+          f'Bigo: 500 PC ({price_text(11)})',
+          callback_data='order_Bigo_500_PC_$11',
       ),
       InlineKeyboardButton(
-          'Bigo: 1000 PC ($21)', callback_data='order_Bigo_1000_PC_$21'
+          f'Bigo: 1000 PC ({price_text(21)})',
+          callback_data='order_Bigo_1000_PC_$21',
       ),
       InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
   )
@@ -458,19 +485,19 @@ def sool_packages(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          'Sool Chill: 1000 PC ($1.98)',
+          f'Sool Chill: 1000 PC ({price_text(1.98)})',
           callback_data='order_Sool_1000_PC_$1.98',
       ),
       InlineKeyboardButton(
-          'Sool Chill: 2000 PC ($3.88)',
+          f'Sool Chill: 2000 PC ({price_text(3.88)})',
           callback_data='order_Sool_2000_PC_$3.88',
       ),
       InlineKeyboardButton(
-          'Sool Chill: 3000 PC ($5.95)',
+          f'Sool Chill: 3000 PC ({price_text(5.95)})',
           callback_data='order_Sool_3000_PC_$5.95',
       ),
       InlineKeyboardButton(
-          'Sool Chill: 4000 PC ($7.95)',
+          f'Sool Chill: 4000 PC ({price_text(7.95)})',
           callback_data='order_Sool_4000_PC_$7.95',
       ),
       InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
@@ -512,34 +539,44 @@ def verify_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          'YouTube: 1 شهر ($4.5)', callback_data='order_YouTube_1M_$4.5'
+          f'YouTube: 1 شهر ({price_text(4.5)})',
+          callback_data='order_YouTube_1M_$4.5',
       ),
       InlineKeyboardButton(
-          'YouTube: 3 أشهر ($13)', callback_data='order_YouTube_3M_$13'
+          f'YouTube: 3 أشهر ({price_text(13)})',
+          callback_data='order_YouTube_3M_$13',
       ),
       InlineKeyboardButton(
-          'YouTube: 6 أشهر ($24)', callback_data='order_YouTube_6M_$24'
+          f'YouTube: 6 أشهر ({price_text(24)})',
+          callback_data='order_YouTube_6M_$24',
       ),
       InlineKeyboardButton(
-          'YouTube: 12 شهر ($44)', callback_data='order_YouTube_12M_$44'
+          f'YouTube: 12 شهر ({price_text(44)})',
+          callback_data='order_YouTube_12M_$44',
       ),
       InlineKeyboardButton(
-          'Telegram: 3 أشهر ($15)', callback_data='order_Telegram_3M_$15'
+          f'Telegram: 3 أشهر ({price_text(15)})',
+          callback_data='order_Telegram_3M_$15',
       ),
       InlineKeyboardButton(
-          'Telegram: 6 أشهر ($22)', callback_data='order_Telegram_6M_$22'
+          f'Telegram: 6 أشهر ({price_text(22)})',
+          callback_data='order_Telegram_6M_$22',
       ),
       InlineKeyboardButton(
-          'Telegram: 12 شهر ($35)', callback_data='order_Telegram_12M_$35'
+          f'Telegram: 12 شهر ({price_text(35)})',
+          callback_data='order_Telegram_12M_$35',
       ),
       InlineKeyboardButton(
-          'Snapchat: 3 أشهر ($7)', callback_data='order_Snapchat_3M_$7'
+          f'Snapchat: 3 أشهر ({price_text(7)})',
+          callback_data='order_Snapchat_3M_$7',
       ),
       InlineKeyboardButton(
-          'Snapchat: 6 أشهر ($12)', callback_data='order_Snapchat_6M_$12'
+          f'Snapchat: 6 أشهر ({price_text(12)})',
+          callback_data='order_Snapchat_6M_$12',
       ),
       InlineKeyboardButton(
-          'Snapchat: 12 شهر ($22)', callback_data='order_Snapchat_12M_$22'
+          f'Snapchat: 12 شهر ({price_text(22)})',
+          callback_data='order_Snapchat_12M_$22',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -562,42 +599,43 @@ def various_menu(call):
       ),
       InlineKeyboardButton('⭐ نجوم تلغرام', callback_data='order_Telegram_Stars'),
       InlineKeyboardButton(
-          '🤖 خدمة الرد الآلي FACEBOOK (1 شهر - $4.8)',
+          f'🤖 خدمة الرد الآلي FACEBOOK (1 شهر - {price_text(4.8)})',
           callback_data='order_FB_Bot_1M_$4.8',
       ),
       InlineKeyboardButton(
-          '🤖 خدمة الرد الآلي FACEBOOK (3 أشهر - $9.6)',
+          f'🤖 خدمة الرد الآلي FACEBOOK (3 أشهر - {price_text(9.6)})',
           callback_data='order_FB_Bot_3M_$9.6',
       ),
       InlineKeyboardButton(
-          '🚫 فك الحظر عن واتساب ($1.5)', callback_data='order_WhatsApp_Unban_$1.5'
+          f'🚫 فك الحظر عن واتساب ({price_text(1.5)})',
+          callback_data='order_WhatsApp_Unban_$1.5',
       ),
       InlineKeyboardButton(
-          '👥 متابعين FACEBOOK: 1000 متابع ($2)',
+          f'👥 متابعين FACEBOOK: 1000 متابع ({price_text(2)})',
           callback_data='order_FB_1k_$2',
       ),
       InlineKeyboardButton(
-          '👥 متابعين FACEBOOK: 5000 متابع ($9.8)',
+          f'👥 متابعين FACEBOOK: 5000 متابع ({price_text(9.8)})',
           callback_data='order_FB_5k_$9.8',
       ),
       InlineKeyboardButton(
-          '👥 متابعين FACEBOOK: 10,000 متابع ($19)',
+          f'👥 متابعين FACEBOOK: 10,000 متابع ({price_text(19)})',
           callback_data='order_FB_10k_$19',
       ),
       InlineKeyboardButton(
-          '👥 متابعين FACEBOOK: 20,000 متابع ($39)',
+          f'👥 متابعين FACEBOOK: 20,000 متابع ({price_text(39)})',
           callback_data='order_FB_20k_$39',
       ),
       InlineKeyboardButton(
-          '📸 متابعين INSTAGRAM: 1000 متابع ($4)',
+          f'📸 متابعين INSTAGRAM: 1000 متابع ({price_text(4)})',
           callback_data='order_IG_1k_$4',
       ),
       InlineKeyboardButton(
-          '📸 متابعين INSTAGRAM: 5000 متابع ($13)',
+          f'📸 متابعين INSTAGRAM: 5000 متابع ({price_text(13)})',
           callback_data='order_IG_5k_$13',
       ),
       InlineKeyboardButton(
-          '📸 متابعين INSTAGRAM: 10,000 متابع ($24)',
+          f'📸 متابعين INSTAGRAM: 10,000 متابع ({price_text(24)})',
           callback_data='order_IG_10k_$24',
       ),
       InlineKeyboardButton(
@@ -733,7 +771,7 @@ def handle_order_selection(call):
   else:
     prompt_text = (
         f'📦 الخدمة المختارة: {service_name}\n\n'
-        f'✍️ **يرجى إرسال رقم الهوية (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
+        f'✍️ ** يرجى إرسال رقم (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
     )
 
   msg = bot.send_message(
