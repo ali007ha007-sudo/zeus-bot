@@ -43,7 +43,7 @@ SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 # 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
 # ==========================================
 USD_TO_SYP_RATE = (
-    15000  # 💡 يمكنك تغيير هذا الرقم في أي وقت حسب سعر السوق السوداء الحالي
+    14000  # 💡 يمكنك تغيير هذا الرقم في أي وقت حسب سعر السوق السوداء الحالي
 )
 
 
@@ -223,7 +223,10 @@ def send_welcome(message):
           callback_data='menu_internet',
       ),
       InlineKeyboardButton(
-          '9️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
+          '9️⃣ خدمات شام كاش / SHAM CASH 💸', callback_data='menu_sham_cash'
+      ),
+      InlineKeyboardButton(
+          '🔟 خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
       ),
   )
 
@@ -272,7 +275,10 @@ def back_home(call):
           callback_data='menu_internet',
       ),
       InlineKeyboardButton(
-          '9️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
+          '9️⃣ خدمات شام كاش / SHAM CASH 💸', callback_data='menu_sham_cash'
+      ),
+      InlineKeyboardButton(
+          '🔟 خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
       ),
   )
   bot.edit_message_text(
@@ -747,7 +753,72 @@ def internet_menu(call):
   )
 
 
-# --- 9. خدمة العملاء / SUPPORT TEAM ---
+# --- 9. خدمات شام كاش / SHAM CASH ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_sham_cash')
+def sham_cash_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          '📥 إيداع رصيد (USD) 💵', callback_data='sham_dep_USD'
+      ),
+      InlineKeyboardButton(
+          '📥 إيداع رصيد (SYP) 💷', callback_data='sham_dep_SYP'
+      ),
+      InlineKeyboardButton(
+          '📥 إيداع رصيد (EUR) 💶', callback_data='sham_dep_EUR'
+      ),
+      InlineKeyboardButton(
+          '📤 سحب رصيد (USD) 💵', callback_data='sham_wit_USD'
+      ),
+      InlineKeyboardButton(
+          '📤 سحب رصيد (SYP) 💷', callback_data='sham_wit_SYP'
+      ),
+      InlineKeyboardButton(
+          '📤 سحب رصيد (EUR) 💶', callback_data='sham_wit_EUR'
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  )
+  sham_text = (
+      '💳 **خدمات محفظة شام كاش (SHAM CASH):**\n\n'
+      'نقدم لكم خدمات الإيداع والسحب لعملات (USD - SYP - EUR) بكل أمان'
+      ' وسرعة.\n\n'
+      '✨ **ملاحظة هامة:** أسعار الإيداع والسحب لدينا دائماً ستكون بأقوى'
+      ' وأفضل الأسعار في السوق ❤️\n\n'
+      'اختر الخدمة المطلوبة:'
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text=sham_text,
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# معالجة طلبات شام كاش (إيداع وسحب)
+@bot.callback_query_handler(
+    func=lambda call: call.data.startswith('sham_dep_')
+    or call.data.startswith('sham_wit_')
+)
+def handle_sham_cash_order(call):
+  action_type = 'إيداع رصيد' if 'sham_dep_' in call.data else 'سحب رصيد'
+  currency = call.data.split('_')[2]
+  service_name = f'شام كاش - {action_type} ({currency})'
+
+  prompt_text = (
+      f'💳 **الخدمة:** {service_name}\n\n'
+      f'✨ **ملاحظة:** أسعار الإيداع والسحب لدينا ستكون دائماً بأقوى الأسعار'
+      f' ❤️\n\n'
+      f'✍️ **يرجى إرسال تفاصيل الطلب (المبلغ المراد، رقم الحساب أو المحفظة، أو التفاصيل اللازمة) في رسالة واحدة:**'
+  )
+
+  msg = bot.send_message(
+      call.message.chat.id, prompt_text, parse_mode='Markdown'
+  )
+  bot.register_next_step_handler(msg, process_user_order, service_name)
+
+
+# --- 🔟. خدمة العملاء / SUPPORT TEAM ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_support')
 def support_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
