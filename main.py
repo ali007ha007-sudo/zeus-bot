@@ -174,8 +174,10 @@ def handle_persistent_buttons(message):
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
   welcome_text = (
-      'مرحباً بك في بوت الخدمات الذكي 🇸🇾\n'
-      'يرجى اختيار القسم المطلوب من القائمة أدناه:'
+      'اهلا بكم في ⚡️ **ZEUS-ECHANCE-BOT** ⚡️ للخدمات الرقمية الشاملة\n\n'
+      'نحن فريق من الأشخاص يمتلك الخبرة لنقدم لك كافه خدمات الشحن والدفع الإلكتروني'
+      ' بكافة انواعة بشكل آمن وسريع وبدقة عالية من الاحترافية ❤️\n\n'
+      'يرجى إختيار القسم المطلوب:'
   )
 
   markup = InlineKeyboardMarkup(row_width=1)
@@ -658,34 +660,42 @@ def windows_menu(call):
   )
 
 
-# --- 8. خدمات مزودين الانترنت / INTERNET SERVICES (المحدثة) ---
+# --- 8. خدمات مزودين الانترنت / INTERNET SERVICES ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_internet')
 def internet_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
-      InlineKeyboardButton('1️⃣ زاد (Zad)', callback_data='order_ISP_Zad'),
+      InlineKeyboardButton('🌐 زاد (Zad)', callback_data='order_ISP_Zad'),
       InlineKeyboardButton(
-          '2️⃣ سيريتل دي إس إل (Syriatel DSL)',
-          callback_data='order_ISP_Syriatel_DSL',
+          '🌐 جميع مزودي الإنترنت في سوريا',
+          callback_data='order_ISP_All_Syria',
       ),
-      InlineKeyboardButton('3️⃣ آيو (Ayo)', callback_data='order_ISP_Ayo'),
+      InlineKeyboardButton('🌐 سوا (Sawa)', callback_data='order_ISP_Sawa'),
+      InlineKeyboardButton('🌐 رن نت (RunNet)', callback_data='order_ISP_RunNet'),
+      InlineKeyboardButton('🌐 آية (Aya)', callback_data='order_ISP_Aya'),
       InlineKeyboardButton(
-          '4️⃣ ترامسول (Tarassul)', callback_data='order_ISP_Tarassul'
+          '🌐 تكامل (Takamol)', callback_data='order_ISP_Takamol'
       ),
-      InlineKeyboardButton('5️⃣ سيبار (Siber)', callback_data='order_ISP_Siber'),
+      InlineKeyboardButton(
+          '🌐 الجمعية السورية للمعلوماتية (SCS)', callback_data='order_ISP_SCS'
+      ),
+      InlineKeyboardButton(
+          '🌐 السورية للاتصالات (Syrian Telecom)',
+          callback_data='order_ISP_SyrianTelecom',
+      ),
+      InlineKeyboardButton(
+          '🌐 الانترنت الهوائي (Wireless)',
+          callback_data='order_ISP_Wireless',
+      ),
+      InlineKeyboardButton(
+          '🌐 الانترنت العالمي (Global)', callback_data='order_ISP_Global'
+      ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
-
-  internet_text = (
-      '🌐 **قائمة مزودي خدمة الإنترنت في سوريا 🇸🇾:**\n\n'
-      '⚠️ **تنبيه هام جداً:** عند إدخال رقم الهاتف، يرجى كتابته مع مفتاح المحافظة حصراً '
-      '(مثال: `011xxxxxxx` أو `021xxxxxxx`) ليتم تنفيذ طلبك بنجاح دون أخطاء.'
-  )
-
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text=internet_text,
+      text='🌐 **اختر مزود الانترنت المطلوب:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
@@ -720,17 +730,22 @@ def support_menu(call):
 def handle_order_selection(call):
   service_name = call.data.replace('order_', '').replace('_', ' ')
 
-  if 'Recharge' in service_name or 'ISP' in service_name:
+  if 'Recharge' in service_name:
     prompt_text = (
         f'📦 الخدمة: {service_name}\n\n'
-        f'⚠️ **تنبيه هام جداً:** يرجى إدخال رقم الهاتف أو الاشتراك مع مفتاح المحافظة حصراً '
-        f'(مثال: `011xxxxxxx` أو `021xxxxxxx`).\n\n'
-        f'✍️ **يرجى تزويدنا بالرقم وتفاصيل الطلب في رسالة واحدة:**'
+        f'⚠️ **يرجى تزويدنا بالرقم مع مفتاح المحافظة** (مثال: `011xxxxxxx` أو `021xxxxxxx`).\n\n'
+        f'✍️ **يرجى إرسال رقم الهاتف وتفاصيل التعبئة في رسالة واحدة:**'
+    )
+  elif 'ISP' in service_name:
+    prompt_text = (
+        f'📦 الخدمة: {service_name}\n\n'
+        f'⚠️ **تنبيه هام:** يرجى إدخال الرقم مع مفتاح المحافظة حصراً (مثال: `011xxxxxxx` أو `021xxxxxxx`).\n\n'
+        f'✍️ **يرجى تزويدنا بالرقم وتفاصيل الاشتراك في رسالة واحدة:**'
     )
   else:
     prompt_text = (
         f'📦 الخدمة المختارة: {service_name}\n\n'
-        f'✍️ **يرجى إرسال رابط الحساب، المعرف، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
+        f'✍️ **يرجى إرسال رقم الهوية (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
     )
 
   msg = bot.send_message(
