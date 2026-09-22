@@ -1,4 +1,3 @@
-البوت النهائي 
 import os
 import threading
 import urllib3
