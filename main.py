@@ -6,7 +6,8 @@ import threading
 from flask import Flask
 import telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton
-from bs4 BeautifulSoup
+from bs4 import BeautifulSoup
+
 
 # تعطيل تحذيرات الأمان الخاصة بشهادات SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
