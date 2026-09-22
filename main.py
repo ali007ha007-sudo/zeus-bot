@@ -1,3 +1,4 @@
+البوت النهائي 
 import os
 import threading
 import urllib3
@@ -665,11 +666,6 @@ def windows_menu(call):
 def internet_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
-      InlineKeyboardButton('🌐 زاد (Zad)', callback_data='order_ISP_Zad'),
-      InlineKeyboardButton(
-          '🌐 جميع مزودي الإنترنت في سوريا',
-          callback_data='order_ISP_All_Syria',
-      ),
       InlineKeyboardButton('🌐 سوا (Sawa)', callback_data='order_ISP_Sawa'),
       InlineKeyboardButton('🌐 رن نت (RunNet)', callback_data='order_ISP_RunNet'),
       InlineKeyboardButton('🌐 آية (Aya)', callback_data='order_ISP_Aya'),
@@ -730,17 +726,10 @@ def support_menu(call):
 def handle_order_selection(call):
   service_name = call.data.replace('order_', '').replace('_', ' ')
 
-  if 'Recharge' in service_name:
+  if 'Recharge' in service_name or 'ISP' in service_name:
     prompt_text = (
         f'📦 الخدمة: {service_name}\n\n'
-        f'⚠️ **يرجى تزويدنا بالرقم مع مفتاح المحافظة** (مثال: `011xxxxxxx` أو `021xxxxxxx`).\n\n'
-        f'✍️ **يرجى إرسال رقم الهاتف وتفاصيل التعبئة في رسالة واحدة:**'
-    )
-  elif 'ISP' in service_name:
-    prompt_text = (
-        f'📦 الخدمة: {service_name}\n\n'
-        f'⚠️ **تنبيه هام:** يرجى إدخال الرقم مع مفتاح المحافظة حصراً (مثال: `011xxxxxxx` أو `021xxxxxxx`).\n\n'
-        f'✍️ **يرجى تزويدنا بالرقم وتفاصيل الاشتراك في رسالة واحدة:**'
+        f'✍️ **يرجى تزويدنا بالرقم أو كود التعبئة أو تفاصيل اشتراك الإنترنت المطلوبة في رسالة واحدة:**'
     )
   else:
     prompt_text = (
