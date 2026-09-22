@@ -43,7 +43,7 @@ SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 # 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
 # ==========================================
 USD_TO_SYP_RATE = (
-    14000  # 💡 يمكنك تغيير هذا الرقم في أي وقت حسب سعر السوق السوداء الحالي
+    15000  # 💡 يمكنك تغيير هذا الرقم في أي وقت حسب سعر السوق السوداء الحالي
 )
 
 
@@ -657,9 +657,18 @@ def various_menu(call):
 def vpn_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
+      InlineKeyboardButton('🛡️ OPEN VPN', callback_data='order_VPN_OpenVPN'),
       InlineKeyboardButton(
-          '📞 تواصل مع الدعم لطلب البروكسي والمفاتيح',
-          callback_data='menu_support',
+          '🛡️ LAGO FAST VPN', callback_data='order_VPN_LagoFast'
+      ),
+      InlineKeyboardButton(
+          '🛡️ HOTSPOT SHIELD', callback_data='order_VPN_HotspotShield'
+      ),
+      InlineKeyboardButton(
+          '🛡️ EXPRESS VPN', callback_data='order_VPN_ExpressVPN'
+      ),
+      InlineKeyboardButton(
+          '📞 تواصل مع الدعم لطلب بروكسي آخر', callback_data='menu_support'
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -667,8 +676,8 @@ def vpn_menu(call):
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
       text=(
-          '🛡️ **خدمة تخطي الموقع VPN (بروكسي):**\nيوجد بروكسي لأغلب المواقع'
-          ' العالمية مع المفاتيح وبأسعار مميزة يرجى التواصل مع فريق الدعم.'
+          '🛡️ **خدمة تخطي الموقع VPN (بروكسي):**\nاختر نوع البروكسي أو الخدمة'
+          ' المطلوبة:'
       ),
       reply_markup=markup,
       parse_mode='Markdown',
@@ -703,6 +712,7 @@ def windows_menu(call):
 def internet_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
+      InlineKeyboardButton('🌐 زاد (ZAD)', callback_data='order_ISP_ZAD'),
       InlineKeyboardButton('🌐 سوا (Sawa)', callback_data='order_ISP_Sawa'),
       InlineKeyboardButton('🌐 رن نت (RunNet)', callback_data='order_ISP_RunNet'),
       InlineKeyboardButton('🌐 آية (Aya)', callback_data='order_ISP_Aya'),
@@ -722,6 +732,9 @@ def internet_menu(call):
       ),
       InlineKeyboardButton(
           '🌐 الانترنت العالمي (Global)', callback_data='order_ISP_Global'
+      ),
+      InlineKeyboardButton(
+          '✨ طلب مزود آخر (تواصل مع الدعم)', callback_data='menu_support'
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -763,15 +776,19 @@ def support_menu(call):
 def handle_order_selection(call):
   service_name = call.data.replace('order_', '').replace('_', ' ')
 
-  if 'Recharge' in service_name or 'ISP' in service_name:
+  if (
+      'Recharge' in service_name
+      or 'ISP' in service_name
+      or 'VPN' in service_name
+  ):
     prompt_text = (
         f'📦 الخدمة: {service_name}\n\n'
-        f'✍️ **يرجى تزويدنا بالرقم أو كود التعبئة أو تفاصيل اشتراك الإنترنت المطلوبة في رسالة واحدة:**'
+        f'✍️ **يرجى تزويدنا بالمعلومات المطلوبة (الرقم، كود التعبئة، أو تفاصيل الاشتراك) في رسالة واحدة:**'
     )
   else:
     prompt_text = (
         f'📦 الخدمة المختارة: {service_name}\n\n'
-        f'✍️ ** يرجى إرسال رقم (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
+        f'✍️ **يرجى إرسال رقم (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
     )
 
   msg = bot.send_message(
