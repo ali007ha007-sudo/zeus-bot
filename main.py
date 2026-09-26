@@ -42,9 +42,7 @@ SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 # ==========================================
 # 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
 # ==========================================
-USD_TO_SYP_RATE = (
-    14000  # 💡 يمكنك تغيير هذا الرقم في أي وقت حسب سعر السوق السوداء الحالي
-)
+USD_TO_SYP_RATE = 14000
 
 
 def price_text(usd_amount):
@@ -81,7 +79,7 @@ def send_order_to_admin(message, service_name, user_input):
     print(f'Error sending notification: {e}')
 
 
-# 📸 استقبال صور إيصالات الدفع (سكرين شوت) من العملاء وتحويلها للإدارة فوراً
+# 📸 استقبال صور إيصالات الدفع من العملاء وتحويلها للإدارة فوراً
 @bot.message_handler(content_types=['photo'])
 def handle_client_photo(message):
   if message.from_user.id == ADMIN_ID:
@@ -172,7 +170,8 @@ def handle_persistent_buttons(message):
         '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
         'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
         '👤 **ALI:** `0951984521`\n'
-        '👤 **ALAA:** `0996743743`\n\n'
+        '👤 **ALAA:** `0996743743`\n'
+        '🚨 **الشكاوى:** `0995611608`\n\n'
         'نحن في خدمتكم دائماً ❤️'
     )
     bot.send_message(
@@ -300,6 +299,7 @@ def games_menu(call):
       InlineKeyboardButton('Jawaker 🃏', callback_data='game_jawaker'),
       InlineKeyboardButton('Clash of Clans 🏰', callback_data='game_clash'),
       InlineKeyboardButton('Call of Duty 🎯', callback_data='game_cod'),
+      InlineKeyboardButton('Fortnite ⚔️', callback_data='game_fortnite'),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   bot.edit_message_text(
@@ -319,8 +319,8 @@ def game_packages(call):
   if game == 'pubg':
     markup.add(
         InlineKeyboardButton(
-            f'PUBG: 60 شدة ({price_text(1)})',
-            callback_data='order_PUBG_60_UC_$1',
+            f'PUBG: 60 شدة ({price_text(1.2)})',
+            callback_data='order_PUBG_60_UC_$1.2',
         ),
         InlineKeyboardButton(
             f'PUBG: 325 شدة ({price_text(5.5)})',
@@ -337,6 +337,10 @@ def game_packages(call):
         InlineKeyboardButton(
             f'PUBG: 3800 شدة ({price_text(49.7)})',
             callback_data='order_PUBG_3800_UC_$49.7',
+        ),
+        InlineKeyboardButton(
+            f'PUBG: 8100 شدة ({price_text(90.2)})',
+            callback_data='order_PUBG_8100_UC_$90.2',
         ),
         InlineKeyboardButton(
             '✨ طلب حزم وترقية وشعارات (تواصل مع الدعم)',
@@ -405,11 +409,31 @@ def game_packages(call):
             callback_data='order_COD_80_CP_$2.1',
         ),
         InlineKeyboardButton(
-            f'Call of Duty: 320 CP ({price_text(7.5)})',
-            callback_data='order_COD_320_CP_$7.5',
+            f'Call of Duty: 420 CP ({price_text(7.5)})',
+            callback_data='order_COD_420_CP_$7.5',
         ),
         InlineKeyboardButton(
-            '✨ طلب المزيد (تواصل مع الدعم)', callback_data='menu_support'
+            f'Call of Duty: 880 CP ({price_text(14.1)})',
+            callback_data='order_COD_880_CP_$14.1',
+        ),
+        InlineKeyboardButton(
+            f'Call of Duty: 2400 CP ({price_text(35.2)})',
+            callback_data='order_COD_2400_CP_$35.2',
+        ),
+        InlineKeyboardButton(
+            f'Call of Duty: 5000 CP ({price_text(68.6)})',
+            callback_data='order_COD_5000_CP_$68.6',
+        ),
+    )
+  elif game == 'fortnite':
+    markup.add(
+        InlineKeyboardButton(
+            f'Fortnite: 2800 بطاقة ({price_text(32.9)})',
+            callback_data='order_Fortnite_2800_$32.9',
+        ),
+        InlineKeyboardButton(
+            f'Fortnite: 5000 بطاقة ({price_text(54.9)})',
+            callback_data='order_Fortnite_5000_$54.9',
         ),
     )
 
@@ -430,16 +454,21 @@ def chat_menu(call):
   markup.add(
       InlineKeyboardButton('Bigo Live 🔴', callback_data='chat_bigo'),
       InlineKeyboardButton('Sool Chill 💬', callback_data='chat_sool'),
-      InlineKeyboardButton('Likee Live 💛', callback_data='order_Likee_Live'),
-      InlineKeyboardButton('Sugo Chat 💬', callback_data='order_Sugo_Chat'),
-      InlineKeyboardButton('Hony Jar 🍯', callback_data='order_Hony_Jar'),
-      InlineKeyboardButton('Lama Chat 🦙', callback_data='order_Lama_Chat'),
-      InlineKeyboardButton('Lggo Live 🟢', callback_data='order_Lggo_Live'),
+      InlineKeyboardButton('Soul Chat 💫', callback_data='chat_soul'),
+      InlineKeyboardButton('Zaffa Live 🌟', callback_data='chat_zaffa'),
+      InlineKeyboardButton('Sugo Chat 💬', callback_data='chat_sugo'),
+      InlineKeyboardButton('Honey Jar 🍯', callback_data='chat_honey'),
+      InlineKeyboardButton('Mico Live 💜', callback_data='chat_mico'),
+      InlineKeyboardButton('Likee Live 💛', callback_data='chat_likee'),
+      InlineKeyboardButton(
+          'Lama Chat 🦙', callback_data='order_Lama_Chat'
+      ),
+      InlineKeyboardButton(
+          'Lggo Live 🟢', callback_data='order_Lggo_Live'
+      ),
       InlineKeyboardButton(
           'Taka Live Chat 🎙️', callback_data='order_Taka_Live'
       ),
-      InlineKeyboardButton('Soul Chat 💫', callback_data='order_Soul_Chat'),
-      InlineKeyboardButton('Mico Live 💜', callback_data='order_Mico_Live'),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   bot.edit_message_text(
@@ -456,24 +485,32 @@ def bigo_packages(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          f'Bigo: 50 PC ({price_text(1)})',
-          callback_data='order_Bigo_50_PC_$1',
+          f'Bigo: 100 PC ({price_text(2.1)})',
+          callback_data='order_Bigo_100_PC_$2.1',
       ),
       InlineKeyboardButton(
-          f'Bigo: 100 PC ({price_text(1.9)})',
-          callback_data='order_Bigo_100_PC_$1.9',
+          f'Bigo: 200 PC ({price_text(3.9)})',
+          callback_data='order_Bigo_200_PC_$3.9',
       ),
       InlineKeyboardButton(
-          f'Bigo: 200 PC ({price_text(3.8)})',
-          callback_data='order_Bigo_200_PC_$3.8',
+          f'Bigo: 300 PC ({price_text(5.8)})',
+          callback_data='order_Bigo_300_PC_$5.8',
       ),
       InlineKeyboardButton(
-          f'Bigo: 500 PC ({price_text(11)})',
-          callback_data='order_Bigo_500_PC_$11',
+          f'Bigo: 400 PC ({price_text(7.9)})',
+          callback_data='order_Bigo_400_PC_$7.9',
       ),
       InlineKeyboardButton(
-          f'Bigo: 1000 PC ({price_text(21)})',
-          callback_data='order_Bigo_1000_PC_$21',
+          f'Bigo: 500 PC ({price_text(9.5)})',
+          callback_data='order_Bigo_500_PC_$9.5',
+      ),
+      InlineKeyboardButton(
+          f'Bigo: 1000 PC ({price_text(18.7)})',
+          callback_data='order_Bigo_1000_PC_$18.7',
+      ),
+      InlineKeyboardButton(
+          f'Bigo: 5000 PC ({price_text(92.5)})',
+          callback_data='order_Bigo_5000_PC_$92.5',
       ),
       InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
   )
@@ -512,6 +549,272 @@ def sool_packages(call):
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
       text='💬 **حزم Sool Chill:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_soul')
+def soul_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Soul Chat: 1000 PC ({price_text(2)})',
+          callback_data='order_Soul_1000_$2',
+      ),
+      InlineKeyboardButton(
+          f'Soul Chat: 2000 PC ({price_text(3.9)})',
+          callback_data='order_Soul_2000_$3.9',
+      ),
+      InlineKeyboardButton(
+          f'Soul Chat: 3000 PC ({price_text(5.95)})',
+          callback_data='order_Soul_3000_$5.95',
+      ),
+      InlineKeyboardButton(
+          f'Soul Chat: 4000 PC ({price_text(7.95)})',
+          callback_data='order_Soul_4000_$7.95',
+      ),
+      InlineKeyboardButton(
+          f'Soul Chat: 5000 PC ({price_text(9.7)})',
+          callback_data='order_Soul_5000_$9.7',
+      ),
+      InlineKeyboardButton(
+          f'Soul Chat: 10,000 PC ({price_text(18.9)})',
+          callback_data='order_Soul_10k_$18.9',
+      ),
+      InlineKeyboardButton(
+          f'Soul Chat: 50,000 PC ({price_text(93)})',
+          callback_data='order_Soul_50k_$93',
+      ),
+      InlineKeyboardButton(
+          f'Soul Chat: 100,000 PC ({price_text(184)})',
+          callback_data='order_Soul_100k_$184',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💫 **حزم Soul Chat:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_zaffa')
+def zaffa_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Zaffa: 60,000 PC ({price_text(1.2)})',
+          callback_data='order_Zaffa_60k_$1.2',
+      ),
+      InlineKeyboardButton(
+          f'Zaffa: 100,000 PC ({price_text(1.9)})',
+          callback_data='order_Zaffa_100k_$1.9',
+      ),
+      InlineKeyboardButton(
+          f'Zaffa: 200,000 PC ({price_text(3.6)})',
+          callback_data='order_Zaffa_200k_$3.6',
+      ),
+      InlineKeyboardButton(
+          f'Zaffa: 500,000 PC ({price_text(8.5)})',
+          callback_data='order_Zaffa_500k_$8.5',
+      ),
+      InlineKeyboardButton(
+          f'Zaffa: 1,000,000 PC ({price_text(16)})',
+          callback_data='order_Zaffa_1M_$16',
+      ),
+      InlineKeyboardButton(
+          f'Zaffa: 1,500,000 PC ({price_text(22.5)})',
+          callback_data='order_Zaffa_1.5M_$22.5',
+      ),
+      InlineKeyboardButton(
+          f'Zaffa: 2,000,000 PC ({price_text(31.6)})',
+          callback_data='order_Zaffa_2M_$31.6',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🌟 **حزم Zaffa Live:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_sugo')
+def sugo_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Sugo: 10,000 PC ({price_text(1.8)})',
+          callback_data='order_Sugo_10k_$1.8',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 20,000 PC ({price_text(3.4)})',
+          callback_data='order_Sugo_20k_$3.4',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 30,000 PC ({price_text(4.77)})',
+          callback_data='order_Sugo_30k_$4.77',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 40,000 PC ({price_text(6.25)})',
+          callback_data='order_Sugo_40k_$6.25',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 50,000 PC ({price_text(7.8)})',
+          callback_data='order_Sugo_50k_$7.8',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 100,000 PC ({price_text(14.85)})',
+          callback_data='order_Sugo_100k_$14.85',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 200,000 PC ({price_text(29.25)})',
+          callback_data='order_Sugo_200k_$29.25',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 300,000 PC ({price_text(44.1)})',
+          callback_data='order_Sugo_300k_$44.1',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 400,000 PC ({price_text(58.3)})',
+          callback_data='order_Sugo_400k_$58.3',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 500,000 PC ({price_text(73.1)})',
+          callback_data='order_Sugo_500k_$73.1',
+      ),
+      InlineKeyboardButton(
+          f'Sugo: 1,000,000 PC ({price_text(144.9)})',
+          callback_data='order_Sugo_1M_$144.9',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💬 **حزم Sugo Live:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_honey')
+def honey_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Honey Jar: 200 PC ({price_text(1.9)})',
+          callback_data='order_Honey_200_$1.9',
+      ),
+      InlineKeyboardButton(
+          f'Honey Jar: 500 PC ({price_text(4.5)})',
+          callback_data='order_Honey_500_$4.5',
+      ),
+      InlineKeyboardButton(
+          f'Honey Jar: 1000 PC ({price_text(8.9)})',
+          callback_data='order_Honey_1000_$8.9',
+      ),
+      InlineKeyboardButton(
+          f'Honey Jar: 2000 PC ({price_text(16.9)})',
+          callback_data='order_Honey_2000_$16.9',
+      ),
+      InlineKeyboardButton(
+          f'Honey Jar: 5000 PC ({price_text(41.75)})',
+          callback_data='order_Honey_5000_$41.75',
+      ),
+      InlineKeyboardButton(
+          f'Honey Jar: 10,000 PC ({price_text(81.2)})',
+          callback_data='order_Honey_10k_$81.2',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🍯 **حزم Honey Jar:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_mico')
+def mico_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Mico: 5000 PC ({price_text(2.1)})',
+          callback_data='order_Mico_5000_$2.1',
+      ),
+      InlineKeyboardButton(
+          f'Mico: 10,000 PC ({price_text(3.95)})',
+          callback_data='order_Mico_10k_$3.95',
+      ),
+      InlineKeyboardButton(
+          f'Mico: 20,000 PC ({price_text(7.55)})',
+          callback_data='order_Mico_20k_$7.55',
+      ),
+      InlineKeyboardButton(
+          f'Mico: 50,000 PC ({price_text(8.3)})',
+          callback_data='order_Mico_50k_$8.3',
+      ),
+      InlineKeyboardButton(
+          f'Mico: 100,000 PC ({price_text(35.85)})',
+          callback_data='order_Mico_100k_$35.85',
+      ),
+      InlineKeyboardButton(
+          f'Mico: 250,000 PC ({price_text(86.1)})',
+          callback_data='order_Mico_250k_$86.1',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💜 **حزم Mico Live:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'chat_likee')
+def likee_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Likee: 250 PC ({price_text(5.5)})',
+          callback_data='order_Likee_250_$5.5',
+      ),
+      InlineKeyboardButton(
+          f'Likee: 500 PC ({price_text(10.4)})',
+          callback_data='order_Likee_500_$10.4',
+      ),
+      InlineKeyboardButton(
+          f'Likee: 1000 PC ({price_text(19.7)})',
+          callback_data='order_Likee_1000_$19.7',
+      ),
+      InlineKeyboardButton(
+          f'Likee: 1500 PC ({price_text(28.8)})',
+          callback_data='order_Likee_1500_$28.8',
+      ),
+      InlineKeyboardButton(
+          f'Likee: 2000 PC ({price_text(37.8)})',
+          callback_data='order_Likee_2000_$37.8',
+      ),
+      InlineKeyboardButton(
+          f'Likee: 5000 PC ({price_text(93.4)})',
+          callback_data='order_Likee_5000_$93.4',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_chat'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💛 **حزم Likee Live:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
@@ -581,8 +884,8 @@ def verify_menu(call):
           callback_data='order_Snapchat_6M_$12',
       ),
       InlineKeyboardButton(
-          f'Snapchat: 12 شهر ({price_text(22)})',
-          callback_data='order_Snapchat_12M_$22',
+          f'Snapchat: 12 شهر ({price_text(28)})',
+          callback_data='order_Snapchat_12M_$28',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -603,7 +906,7 @@ def various_menu(call):
       InlineKeyboardButton(
           '📁 شراء مساحة تخزين GOOGLE', callback_data='order_Google_Storage'
       ),
-      InlineKeyboardButton('⭐ نجوم تلغرام', callback_data='order_Telegram_Stars'),
+      InlineKeyboardButton('⭐ نجوم تلغرام', callback_data='menu_tg_stars'),
       InlineKeyboardButton(
           f'🤖 خدمة الرد الآلي FACEBOOK (1 شهر - {price_text(4.8)})',
           callback_data='order_FB_Bot_1M_$4.8',
@@ -658,21 +961,46 @@ def various_menu(call):
   )
 
 
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_tg_stars')
+def tg_stars_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'⭐ 50 نجمة ({price_text(1.5)})',
+          callback_data='order_Telegram_Stars_50_$1.5',
+      ),
+      InlineKeyboardButton(
+          f'⭐ 75 نجمة ({price_text(2.3)})',
+          callback_data='order_Telegram_Stars_75_$2.3',
+      ),
+      InlineKeyboardButton(
+          f'⭐ 100 نجمة ({price_text(2.97)})',
+          callback_data='order_Telegram_Stars_100_$2.97',
+      ),
+      InlineKeyboardButton(
+          f'⭐ 500 نجمة ({price_text(11.1)})',
+          callback_data='order_Telegram_Stars_500_$11.1',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_various'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='⭐ **نجوم تلغرام:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
 # --- 6. خدمة تخطي الموقع VPN (بروكسي) ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_vpn')
 def vpn_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
-      InlineKeyboardButton('🛡️ OPEN VPN', callback_data='order_VPN_OpenVPN'),
-      InlineKeyboardButton(
-          '🛡️ LAGO FAST VPN', callback_data='order_VPN_LagoFast'
-      ),
-      InlineKeyboardButton(
-          '🛡️ HOTSPOT SHIELD', callback_data='order_VPN_HotspotShield'
-      ),
-      InlineKeyboardButton(
-          '🛡️ EXPRESS VPN', callback_data='order_VPN_ExpressVPN'
-      ),
+      InlineKeyboardButton('🛡️ OPEN VPN', callback_data='vpn_open'),
+      InlineKeyboardButton('🛡️ EXPRESS VPN', callback_data='vpn_express'),
+      InlineKeyboardButton('🛡️ HOTSPOT SHIELD', callback_data='vpn_hotspot'),
+      InlineKeyboardButton('🛡️ LOKO VPN', callback_data='vpn_loko'),
       InlineKeyboardButton(
           '📞 تواصل مع الدعم لطلب بروكسي آخر', callback_data='menu_support'
       ),
@@ -690,17 +1018,122 @@ def vpn_menu(call):
   )
 
 
+@bot.callback_query_handler(func=lambda call: call.data == 'vpn_open')
+def vpn_open_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Open VPN: 1 شهر ({price_text(2)})',
+          callback_data='order_OpenVPN_1M_$2',
+      ),
+      InlineKeyboardButton(
+          f'Open VPN: 3 أشهر ({price_text(3.9)})',
+          callback_data='order_OpenVPN_3M_$3.9',
+      ),
+      InlineKeyboardButton(
+          f'Open VPN: 6 أشهر ({price_text(4.8)})',
+          callback_data='order_OpenVPN_6M_$4.8',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🛡️ **حزم Open VPN:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'vpn_express')
+def vpn_express_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Express VPN: 1 شهر ({price_text(6)})',
+          callback_data='order_ExpressVPN_1M_$6',
+      ),
+      InlineKeyboardButton(
+          f'Express VPN: 3 أشهر ({price_text(13)})',
+          callback_data='order_ExpressVPN_3M_$13',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🛡️ **حزم Express VPN:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'vpn_hotspot')
+def vpn_hotspot_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Hotspot Shield: 1 شهر ({price_text(2)})',
+          callback_data='order_Hotspot_1M_$2',
+      ),
+      InlineKeyboardButton(
+          f'Hotspot Shield: 3 أشهر ({price_text(3)})',
+          callback_data='order_Hotspot_3M_$3',
+      ),
+      InlineKeyboardButton(
+          f'Hotspot Shield: 6 أشهر ({price_text(4)})',
+          callback_data='order_Hotspot_6M_$4',
+      ),
+      InlineKeyboardButton(
+          f'Hotspot Shield: 12 شهر ({price_text(6)})',
+          callback_data='order_Hotspot_12M_$6',
+      ),
+      InlineKeyboardButton(
+          f'Hotspot Shield: 24 شهر ({price_text(10)})',
+          callback_data='order_Hotspot_24M_$10',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🛡️ **حزم Hotspot Shield:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+@bot.callback_query_handler(func=lambda call: call.data == 'vpn_loko')
+def vpn_loko_packages(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'Loko VPN: 1 شهر ({price_text(7)})',
+          callback_data='order_Loko_1M_$7',
+      ),
+      InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='🛡️ **حزم Loko VPN:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
 # --- 7. خدمات ويندوز / WINDOWS SERVICES ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_windows')
 def windows_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '🔑 تفعيل وتنشيط مفاتيح ويندوز',
-          callback_data='order_Windows_Activation',
+          f'🔑 تنشيط وتفعيل مفاتيح ويندوز ({price_text(5)})',
+          callback_data='order_Windows_Activation_$5',
       ),
       InlineKeyboardButton(
-          '🔑 تفعيل وتنشيط مفاتيح أوفيس', callback_data='order_Office_Activation'
+          f'🔑 تنشيط وتفعيل الأوفيس ({price_text(5)})',
+          callback_data='order_Office_Activation_$5',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -759,32 +1192,17 @@ def sham_cash_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '📥 إيداع رصيد (USD) 💵', callback_data='sham_dep_USD'
-      ),
-      InlineKeyboardButton(
-          '📥 إيداع رصيد (SYP) 💷', callback_data='sham_dep_SYP'
-      ),
-      InlineKeyboardButton(
-          '📥 إيداع رصيد (EUR) 💶', callback_data='sham_dep_EUR'
-      ),
-      InlineKeyboardButton(
-          '📤 سحب رصيد (USD) 💵', callback_data='sham_wit_USD'
-      ),
-      InlineKeyboardButton(
-          '📤 سحب رصيد (SYP) 💷', callback_data='sham_wit_SYP'
-      ),
-      InlineKeyboardButton(
-          '📤 سحب رصيد (EUR) 💶', callback_data='sham_wit_EUR'
+          '💱 تحويل العملات (SYP ⇄ USD / EUR)',
+          callback_data='order_Sham_Exchange',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   sham_text = (
       '💳 **خدمات محفظة شام كاش (SHAM CASH):**\n\n'
-      'نقدم لكم خدمات الإيداع والسحب لعملات (USD - SYP - EUR) بكل أمان'
-      ' وسرعة.\n\n'
-      '✨ **ملاحظة هامة:** أسعار الإيداع والسحب لدينا دائماً ستكون بأقوى'
-      ' وأفضل الأسعار في السوق ❤️\n\n'
-      'اختر الخدمة المطلوبة:'
+      'نقدم خدمة مميزة للتحويل بين العملة السورية (SYP) والعملات الأجنبية (دولار'
+      ' USD - يورو EUR) بكل أمان وسرعة.\n\n'
+      '📊 **العمولة / النسبة:** 3%\n\n'
+      'اضغط على الزر أدناه لبدء الطلب:'
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
@@ -793,29 +1211,6 @@ def sham_cash_menu(call):
       reply_markup=markup,
       parse_mode='Markdown',
   )
-
-
-# معالجة طلبات شام كاش (إيداع وسحب)
-@bot.callback_query_handler(
-    func=lambda call: call.data.startswith('sham_dep_')
-    or call.data.startswith('sham_wit_')
-)
-def handle_sham_cash_order(call):
-  action_type = 'إيداع رصيد' if 'sham_dep_' in call.data else 'سحب رصيد'
-  currency = call.data.split('_')[2]
-  service_name = f'شام كاش - {action_type} ({currency})'
-
-  prompt_text = (
-      f'💳 **الخدمة:** {service_name}\n\n'
-      f'✨ **ملاحظة:** أسعار الإيداع والسحب لدينا ستكون دائماً بأقوى الأسعار'
-      f' ❤️\n\n'
-      f'✍️ **يرجى إرسال تفاصيل الطلب (المبلغ المراد، رقم الحساب أو المحفظة، أو التفاصيل اللازمة) في رسالة واحدة:**'
-  )
-
-  msg = bot.send_message(
-      call.message.chat.id, prompt_text, parse_mode='Markdown'
-  )
-  bot.register_next_step_handler(msg, process_user_order, service_name)
 
 
 # --- 🔟. خدمة العملاء / SUPPORT TEAM ---
@@ -827,7 +1222,8 @@ def support_menu(call):
       '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
       'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
       '👤 **ALI:** `0951984521`\n'
-      '👤 **ALAA:** `0996743743`\n\n'
+      '👤 **ALAA:** `0996743743`\n'
+      '🚨 **الشكاوى:** `0995611608`\n\n'
       'نحن في خدمتكم دائماً ❤️'
   )
   bot.edit_message_text(
@@ -845,12 +1241,19 @@ def support_menu(call):
     or call.data.startswith('chat_')
 )
 def handle_order_selection(call):
-  service_name = call.data.replace('order_', '').replace('_', ' ')
+  service_name = (
+      call.data.replace('order_', '')
+      .replace('chat_', '')
+      .replace('_', ' ')
+  )
 
   if (
       'Recharge' in service_name
       or 'ISP' in service_name
-      or 'VPN' in service_name
+      or 'OpenVPN' in service_name
+      or 'ExpressVPN' in service_name
+      or 'Hotspot' in service_name
+      or 'Loko' in service_name
   ):
     prompt_text = (
         f'📦 الخدمة: {service_name}\n\n'
@@ -868,7 +1271,7 @@ def handle_order_selection(call):
   bot.register_next_step_handler(msg, process_user_order, service_name)
 
 
-# استقبال مدخلات العميل وإرسال الإشعار للإدارة وصورة الباركود ورقم المحفظة
+# استقبال مدخلات العميل وإرسال الإشعار للإدارة ورقم المحفظة
 def process_user_order(message, service_name):
   user_input = message.text
 
