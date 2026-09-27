@@ -1208,16 +1208,16 @@ def sham_cash_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '🇸🇾 ➡️ 🇺🇸 SYP ➡️ USD', callback_data='order_Sham_SYP_USD'
+          '🇸🇾 SYP ➡️ 🇺🇸 USD', callback_data='order_Sham_SYP_USD'
       ),
       InlineKeyboardButton(
-          '🇸🇾 ➡️ 🇪🇺 SYP ➡️ EUR', callback_data='order_Sham_SYP_EUR'
+          '🇸🇾 SYP ➡️ 🇪🇺 EUR', callback_data='order_Sham_SYP_EUR'
       ),
       InlineKeyboardButton(
-          '🇺🇸 ➡️ 🇸🇾 USD ➡️ SYP', callback_data='order_Sham_USD_SYP'
+          ' 🇺🇸 USD ➡️ 🇸🇾 SYP', callback_data='order_Sham_USD_SYP'
       ),
       InlineKeyboardButton(
-          '🇪🇺 ➡️ 🇸🇾 EUR ➡️ SYP', callback_data='order_Sham_EUR_SYP'
+          '🇪🇺 EUR ➡️ 🇸🇾SYP', callback_data='order_Sham_EUR_SYP'
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -1225,7 +1225,7 @@ def sham_cash_menu(call):
       '💳 **خدمات محفظة شام كاش (SHAM CASH):**\n\n'
       'نقدم خدمة مميزة للتحويل بين العملة السورية (SYP) والعملات الأجنبية (دولار'
       ' USD - يورو EUR) بكل أمان وسرعة.\n\n'
-      '📊 **العمولة / النسبة:** 3%\n\n'
+      '📊 **العمولة:** 3%\n\n'
       '👇 **اختر اتجاه التحويل المطلوب:**'
   )
   bot.edit_message_text(
