@@ -1,6 +1,5 @@
 import os
 import threading
-import urllib3
 from flask import Flask
 import telebot
 from telebot.types import (
@@ -9,6 +8,7 @@ from telebot.types import (
     ReplyKeyboardMarkup,
     KeyboardButton,
 )
+import urllib3
 
 # تعطيل تحذيرات الأمان الخاصة بـ SSL
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -1354,10 +1354,34 @@ def handle_order_selection(call):
   bot.register_next_step_handler(msg, process_user_order, service_name)
 
 
-# استقبال مدخلات العميل وإرسال الإشعار للإدارة ومعلومات المحافظ
+# استقبال مدخلات العميل وإرسال الإشعار للإدارة ومعلومات المحافظ (تمت إضافة الحماية للأزرار هنا)
 def process_user_order(message, service_name):
   user_input = message.text
 
+  # 1. التحقق مما إذا كان العميل ضغط على زر "القائمة الرئيسية" أثناء إدخال البيانات
+  if user_input == '🏠 القائمة الرئيسية / Main Menu':
+    send_welcome(message)
+    return
+
+  # 2. التحقق مما إذا كان العميل ضغط على زر "الدعم الفني" أثناء إدخال البيانات
+  elif user_input == '📞 الدعم الفني / Support':
+    support_text = (
+        '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
+        'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
+        '👤 **ALI:** `0951984521`\n'
+        '👤 **ALAA:** `0996743743`\n'
+        '🚨 **الشكاوى:** `0995611608`\n\n'
+        'نحن في خدمتكم دائماً ❤️'
+    )
+    bot.send_message(
+        message.chat.id,
+        support_text,
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
+    )
+    return
+
+  # 3. إذا كان النص عبارة عن بيانات عادية (ID أو معلومات الحساب)، يتم متابعة الطلب طبيعياً
   send_order_to_admin(message, service_name, user_input)
 
   caption_text = (
