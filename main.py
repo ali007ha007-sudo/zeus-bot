@@ -465,10 +465,10 @@ def chat_menu(call):
       InlineKeyboardButton('Mico Live 💜', callback_data='chat_mico'),
       InlineKeyboardButton('Likee Live 💛', callback_data='chat_likee'),
       InlineKeyboardButton(
-          'Lama Chat 🦙', callback_data='order_Lama_Chat'
+          'Lama Chat 🦙 (قريباً ⏳️)', callback_data='chat_lama_soon'
       ),
       InlineKeyboardButton(
-          'Lggo Live 🟢', callback_data='order_Lggo_Live'
+          'Lggo Live 🟢 (قريباً ⏳️)', callback_data='chat_lggo_soon'
       ),
       InlineKeyboardButton(
           'Taka Live Chat 🎙️', callback_data='order_Taka_Live'
@@ -481,6 +481,18 @@ def chat_menu(call):
       text='💬 **اختر التطبيق المطلوب:**',
       reply_markup=markup,
       parse_mode='Markdown',
+  )
+
+
+# معالجة أزرار التطبيقات غير المتاحة (قريباً)
+@bot.callback_query_handler(
+    func=lambda call: call.data in ['chat_lama_soon', 'chat_lggo_soon']
+)
+def coming_soon_handler(call):
+  bot.answer_callback_query(
+      call.id,
+      text='هذه الخدمة ستتوفر قريباً ⏳️ Coming soon',
+      show_alert=True,
   )
 
 
@@ -1196,8 +1208,16 @@ def sham_cash_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '💱 تحويل العملات (SYP ⇄ USD / EUR)',
-          callback_data='order_Sham_Exchange',
+          '🇸🇾 ➡️ 🇺🇸 SYP ➡️ USD', callback_data='order_Sham_SYP_USD'
+      ),
+      InlineKeyboardButton(
+          '🇸🇾 ➡️ 🇪🇺 SYP ➡️ EUR', callback_data='order_Sham_SYP_EUR'
+      ),
+      InlineKeyboardButton(
+          '🇺🇸 ➡️ 🇸🇾 USD ➡️ SYP', callback_data='order_Sham_USD_SYP'
+      ),
+      InlineKeyboardButton(
+          '🇪🇺 ➡️ 🇸🇾 EUR ➡️ SYP', callback_data='order_Sham_EUR_SYP'
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -1206,7 +1226,7 @@ def sham_cash_menu(call):
       'نقدم خدمة مميزة للتحويل بين العملة السورية (SYP) والعملات الأجنبية (دولار'
       ' USD - يورو EUR) بكل أمان وسرعة.\n\n'
       '📊 **العمولة / النسبة:** 3%\n\n'
-      'اضغط على الزر أدناه لبدء الطلب:'
+      '👇 **اختر اتجاه التحويل المطلوب:**'
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
@@ -1245,11 +1265,23 @@ def support_menu(call):
     or call.data.startswith('chat_')
 )
 def handle_order_selection(call):
-  service_name = (
-      call.data.replace('order_', '')
-      .replace('chat_', '')
-      .replace('_', ' ')
-  )
+  # تخصيص اسم الخدمة إذا كانت تتعلق بتحويلات شام كاش
+  if call.data.startswith('order_Sham_'):
+    sham_type = call.data.replace('order_Sham_', '')
+    if sham_type == 'SYP_USD':
+      service_name = 'شام كاش (SYP ➡️ USD)'
+    elif sham_type == 'SYP_EUR':
+      service_name = 'شام كاش (SYP ➡️ EUR)'
+    elif sham_type == 'USD_SYP':
+      service_name = 'شام كاش (USD ➡️ SYP)'
+    elif sham_type == 'EUR_SYP':
+      service_name = 'شام كاش (EUR ➡️ SYP)'
+    else:
+      service_name = 'شام كاش تحويل'
+  else:
+    service_name = (
+        call.data.replace('order_', '').replace('chat_', '').replace('_', ' ')
+    )
 
   if (
       'Recharge' in service_name
@@ -1258,10 +1290,11 @@ def handle_order_selection(call):
       or 'ExpressVPN' in service_name
       or 'Hotspot' in service_name
       or 'Loko' in service_name
+      or 'شام كاش' in service_name
   ):
     prompt_text = (
         f'📦 الخدمة: {service_name}\n\n'
-        f'✍️ **يرجى تزويدنا بالمعلومات المطلوبة (الرقم، كود التعبئة، أو تفاصيل الاشتراك) في رسالة واحدة:**'
+        f'✍️ **يرجى تزويدنا بالمعلومات المطلوبة (الرقم، المبلغ، تفاصيل التحويل، أو الحساب) في رسالة واحدة:**'
     )
   else:
     prompt_text = (
