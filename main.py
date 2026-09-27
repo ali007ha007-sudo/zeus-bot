@@ -1148,7 +1148,8 @@ def vpn_hotspot_packages(call):
       ),
       InlineKeyboardButton(
           f'Hotspot Shield: 12 شهر ({price_text(6)})',
-          callback_data='order_Hotspot_12 شهر 
+          callback_data='order_Hotspot_12 شهر _$6',
+      ),
       InlineKeyboardButton(
           f'Hotspot Shield: 24 شهر ({price_text(10)})',
           callback_data='order_Hotspot_24 شهر _$10',
