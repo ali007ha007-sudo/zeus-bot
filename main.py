@@ -911,43 +911,43 @@ def verify_menu(call):
   markup.add(
       InlineKeyboardButton(
           f'YouTube: 1 شهر ({price_text(4.5)})',
-          callback_data='order_YouTube_1M_$4.5',
+          callback_data='order_YouTube_1 شهر _$4.5',
       ),
       InlineKeyboardButton(
           f'YouTube: 3 أشهر ({price_text(13)})',
-          callback_data='order_YouTube_3M_$13',
+          callback_data='order_YouTube_3 شهر _$13',
       ),
       InlineKeyboardButton(
           f'YouTube: 6 أشهر ({price_text(24)})',
-          callback_data='order_YouTube_6M_$24',
+          callback_data='order_YouTube_6 أشهر _$24',
       ),
       InlineKeyboardButton(
           f'YouTube: 12 شهر ({price_text(44)})',
-          callback_data='order_YouTube_12M_$44',
+          callback_data='order_YouTube_12 شهر _$44',
       ),
       InlineKeyboardButton(
           f'Telegram: 3 أشهر ({price_text(15)})',
-          callback_data='order_Telegram_3M_$15',
+          callback_data='order_Telegram_3 أشهر _$15',
       ),
       InlineKeyboardButton(
           f'Telegram: 6 أشهر ({price_text(22)})',
-          callback_data='order_Telegram_6M_$22',
+          callback_data='order_Telegram_6 أشهر _$22',
       ),
       InlineKeyboardButton(
           f'Telegram: 12 شهر ({price_text(35)})',
-          callback_data='order_Telegram_12M_$35',
+          callback_data='order_Telegram_12 شهر _$35',
       ),
       InlineKeyboardButton(
           f'Snapchat: 3 أشهر ({price_text(7)})',
-          callback_data='order_Snapchat_3M_$7',
+          callback_data='order_Snapchat_3 أشهر _$7',
       ),
       InlineKeyboardButton(
           f'Snapchat: 6 أشهر ({price_text(12)})',
-          callback_data='order_Snapchat_6M_$12',
+          callback_data='order_Snapchat_6 أشهر _$12',
       ),
       InlineKeyboardButton(
           f'Snapchat: 12 شهر ({price_text(28)})',
-          callback_data='order_Snapchat_12M_$28',
+          callback_data='order_Snapchat_12 شهر _$28',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
@@ -971,11 +971,11 @@ def various_menu(call):
       InlineKeyboardButton('⭐ نجوم تلغرام', callback_data='menu_tg_stars'),
       InlineKeyboardButton(
           f'🤖 خدمة الرد الآلي FACEBOOK (1 شهر - {price_text(4.8)})',
-          callback_data='order_FB_Bot_1M_$4.8',
+          callback_data='order_FB_Bot_1 شهر _$4.8',
       ),
       InlineKeyboardButton(
           f'🤖 خدمة الرد الآلي FACEBOOK (3 أشهر - {price_text(9.6)})',
-          callback_data='order_FB_Bot_3M_$9.6',
+          callback_data='order_FB_Bot_3 أشهر _$9.6',
       ),
       InlineKeyboardButton(
           f'🚫 فك الحظر عن واتساب ({price_text(1.5)})',
@@ -1086,15 +1086,15 @@ def vpn_open_packages(call):
   markup.add(
       InlineKeyboardButton(
           f'Open VPN: 1 شهر ({price_text(2)})',
-          callback_data='order_OpenVPN_1M_$2',
+          callback_data='order_OpenVPN_1 شهر _$2',
       ),
       InlineKeyboardButton(
           f'Open VPN: 3 أشهر ({price_text(3.9)})',
-          callback_data='order_OpenVPN_3M_$3.9',
+          callback_data='order_OpenVPN_3 أشهر _$3.9',
       ),
       InlineKeyboardButton(
           f'Open VPN: 6 أشهر ({price_text(4.8)})',
-          callback_data='order_OpenVPN_6M_$4.8',
+          callback_data='order_OpenVPN_6 أشهر _$4.8',
       ),
       InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
   )
@@ -1113,11 +1113,11 @@ def vpn_express_packages(call):
   markup.add(
       InlineKeyboardButton(
           f'Express VPN: 1 شهر ({price_text(6)})',
-          callback_data='order_ExpressVPN_1M_$6',
+          callback_data='order_ExpressVPN_1 شهر _$6',
       ),
       InlineKeyboardButton(
           f'Express VPN: 3 أشهر ({price_text(13)})',
-          callback_data='order_ExpressVPN_3M_$13',
+          callback_data='order_ExpressVPN_3 أشهر _$13',
       ),
       InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
   )
@@ -1136,23 +1136,22 @@ def vpn_hotspot_packages(call):
   markup.add(
       InlineKeyboardButton(
           f'Hotspot Shield: 1 شهر ({price_text(2)})',
-          callback_data='order_Hotspot_1M_$2',
+          callback_data='order_Hotspot_1 شهر _$2',
       ),
       InlineKeyboardButton(
           f'Hotspot Shield: 3 أشهر ({price_text(3)})',
-          callback_data='order_Hotspot_3M_$3',
+          callback_data='order_Hotspot_3 أشهر _$3',
       ),
       InlineKeyboardButton(
           f'Hotspot Shield: 6 أشهر ({price_text(4)})',
-          callback_data='order_Hotspot_6M_$4',
+          callback_data='order_Hotspot_6 أشهر _$4',
       ),
       InlineKeyboardButton(
           f'Hotspot Shield: 12 شهر ({price_text(6)})',
-          callback_data='order_Hotspot_12M_$6',
-      ),
+          callback_data='order_Hotspot_12 شهر 
       InlineKeyboardButton(
           f'Hotspot Shield: 24 شهر ({price_text(10)})',
-          callback_data='order_Hotspot_24M_$10',
+          callback_data='order_Hotspot_24 شهر _$10',
       ),
       InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
   )
@@ -1171,7 +1170,7 @@ def vpn_loko_packages(call):
   markup.add(
       InlineKeyboardButton(
           f'Loko VPN: 1 شهر ({price_text(7)})',
-          callback_data='order_Loko_1M_$7',
+          callback_data='order_Loko_1 شهر _$7',
       ),
       InlineKeyboardButton('🔙 رجوع', callback_data='menu_vpn'),
   )
