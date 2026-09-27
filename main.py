@@ -153,7 +153,7 @@ def handle_client_text_receipt(message):
     bot.reply_to(
         message,
         '✅ **تم استلام رقم العملية / إشعار الدفع بنجاح!**\nجاري التحقق من قبل الإدارة وتنفيذ طلبك'
-        ' في أقرب وقت ❤️',
+        ' في أقرب وقت مدة التحقق خلال 60 دقيقة  ❤️',
         reply_markup=get_persistent_keyboard(),
         parse_mode='Markdown',
     )
@@ -471,7 +471,7 @@ def chat_menu(call):
           'Lggo Live 🟢 (قريباً ⏳️)', callback_data='chat_lggo_soon'
       ),
       InlineKeyboardButton(
-          'Taka Live Chat 🎙️', callback_data='order_Taka_Live'
+          'Taka Live Chat 🎙️ (قريباً ⏳️)', callback_data='order_Taka_Live'
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
