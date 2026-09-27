@@ -200,36 +200,39 @@ def send_welcome(message):
   markup.add(
       InlineKeyboardButton('1️⃣ الألعاب / GAMES 🎮', callback_data='menu_games'),
       InlineKeyboardButton(
-          '2️⃣ التطبيقات الصوتية والدردشة / CHAT APP 💬',
+          '2️⃣ الذكاء الاصطناعي / AI 💭', callback_data='menu_ai'
+      ),
+      InlineKeyboardButton(
+          '3️⃣ التطبيقات الصوتية والدردشة / CHAT APP 💬',
           callback_data='menu_chat',
       ),
       InlineKeyboardButton(
-          '3️⃣ تعبئة الرصيد / RECHARGE 💳', callback_data='menu_recharge'
+          '4️⃣ تعبئة الرصيد / RECHARGE 💳', callback_data='menu_recharge'
       ),
       InlineKeyboardButton(
-          '4️⃣ توثيق الحسابات / ACCOUNTS VERIFICATION 🔐',
+          '5️⃣ توثيق الحسابات / ACCOUNTS VERIFICATION 🔐',
           callback_data='menu_verify',
       ),
       InlineKeyboardButton(
-          '5️⃣ خدمات متنوعة / Various Services 🌐',
+          '6️⃣ خدمات متنوعة / Various Services 🌐',
           callback_data='menu_various',
       ),
       InlineKeyboardButton(
-          '6️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️', callback_data='menu_vpn'
+          '7️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️', callback_data='menu_vpn'
       ),
       InlineKeyboardButton(
-          '7️⃣ خدمات ويندوز / WINDOWS SERVICES 💻',
+          '8️⃣ خدمات ويندوز / WINDOWS SERVICES 💻',
           callback_data='menu_windows',
       ),
       InlineKeyboardButton(
-          '8️⃣ خدمات مزودين الانترنت / INTERNET SERVICES 🌐',
+          '9️⃣ خدمات مزودين الانترنت / INTERNET SERVICES 🌐',
           callback_data='menu_internet',
       ),
       InlineKeyboardButton(
-          '9️⃣ خدمات شام كاش / SHAM CASH 💸', callback_data='menu_sham_cash'
+          '🔟 خدمات شام كاش / SHAM CASH 💸', callback_data='menu_sham_cash'
       ),
       InlineKeyboardButton(
-          '🔟 خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
+          '1️⃣1️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
       ),
   )
 
@@ -252,36 +255,39 @@ def back_home(call):
   markup.add(
       InlineKeyboardButton('1️⃣ الألعاب / GAMES 🎮', callback_data='menu_games'),
       InlineKeyboardButton(
-          '2️⃣ التطبيقات الصوتية والدردشة / CHAT APP 💬',
+          '2️⃣ الذكاء الاصطناعي / AI 💭', callback_data='menu_ai'
+      ),
+      InlineKeyboardButton(
+          '3️⃣ التطبيقات الصوتية والدردشة / CHAT APP 💬',
           callback_data='menu_chat',
       ),
       InlineKeyboardButton(
-          '3️⃣ تعبئة الرصيد / RECHARGE 💳', callback_data='menu_recharge'
+          '4️⃣ تعبئة الرصيد / RECHARGE 💳', callback_data='menu_recharge'
       ),
       InlineKeyboardButton(
-          '4️⃣ توثيق الحسابات / ACCOUNTS VERIFICATION 🔐',
+          '5️⃣ توثيق الحسابات / ACCOUNTS VERIFICATION 🔐',
           callback_data='menu_verify',
       ),
       InlineKeyboardButton(
-          '5️⃣ خدمات متنوعة / Various Services 🌐',
+          '6️⃣ خدمات متنوعة / Various Services 🌐',
           callback_data='menu_various',
       ),
       InlineKeyboardButton(
-          '6️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️', callback_data='menu_vpn'
+          '7️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️', callback_data='menu_vpn'
       ),
       InlineKeyboardButton(
-          '7️⃣ خدمات ويندوز / WINDOWS SERVICES 💻',
+          '8️⃣ خدمات ويندوز / WINDOWS SERVICES 💻',
           callback_data='menu_windows',
       ),
       InlineKeyboardButton(
-          '8️⃣ خدمات مزودين الانترنت / INTERNET SERVICES 🌐',
+          '9️⃣ خدمات مزودين الانترنت / INTERNET SERVICES 🌐',
           callback_data='menu_internet',
       ),
       InlineKeyboardButton(
-          '9️⃣ خدمات شام كاش / SHAM CASH 💸', callback_data='menu_sham_cash'
+          '🔟 خدمات شام كاش / SHAM CASH 💸', callback_data='menu_sham_cash'
       ),
       InlineKeyboardButton(
-          '🔟 خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
+          '1️⃣1️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
       ),
   )
   bot.edit_message_text(
@@ -451,7 +457,47 @@ def game_packages(call):
   )
 
 
-# --- 2. التطبيقات الصوتية والدردشة / CHAT APP ---
+# --- 2. قسم الذكاء الاصطناعي / AI 💭 ---
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_ai')
+def ai_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          f'ChatGPT Plus: تفعيل شخصي 1 شهر ({price_text(19)})',
+          callback_data='order_AI_ChatGPT_Plus_1M_$19',
+      ),
+      InlineKeyboardButton(
+          f'Gemini AI: تفعيل شخصي 6 أشهر ({price_text(12)})',
+          callback_data='order_AI_Gemini_6M_$12',
+      ),
+      InlineKeyboardButton(
+          f'Gemini AI Pro: تفعيل 1 شهر ({price_text(3.7)})',
+          callback_data='order_AI_GeminiPro_1M_$3.7',
+      ),
+      InlineKeyboardButton(
+          f'Gemini AI Pro: تفعيل 12 شهر ({price_text(49)})',
+          callback_data='order_AI_GeminiPro_12M_$49',
+      ),
+      InlineKeyboardButton(
+          f'CapCut Pro: تفعيل شخصي 1 شهر ({price_text(15)})',
+          callback_data='order_AI_CapCut_1M_$15',
+      ),
+      InlineKeyboardButton(
+          f'Canva Pro: تفعيل شخصي مع جميع الميزات 12 شهر ({price_text(14)})',
+          callback_data='order_AI_Canva_12M_$14',
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  )
+  bot.edit_message_text(
+      chat_id=call.message.chat.id,
+      message_id=call.message.message_id,
+      text='💭 **اختر خدمة الذكاء الاصطناعي المطلوبة:**',
+      reply_markup=markup,
+      parse_mode='Markdown',
+  )
+
+
+# --- 3. التطبيقات الصوتية والدردشة / CHAT APP ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_chat')
 def chat_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -836,7 +882,7 @@ def likee_packages(call):
   )
 
 
-# --- 3. تعبئة الرصيد / RECHARGE ---
+# --- 4. تعبئة الرصيد / RECHARGE ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_recharge')
 def recharge_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -858,7 +904,7 @@ def recharge_menu(call):
   )
 
 
-# --- 4. توثيق الحسابات / ACCOUNTS VERIFICATION ---
+# --- 5. توثيق الحسابات / ACCOUNTS VERIFICATION ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_verify')
 def verify_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -914,7 +960,7 @@ def verify_menu(call):
   )
 
 
-# --- 5. خدمات متنوعة / Various Services ---
+# --- 6. خدمات متنوعة / Various Services ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_various')
 def various_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -1008,7 +1054,7 @@ def tg_stars_menu(call):
   )
 
 
-# --- 6. خدمة تخطي الموقع VPN (بروكسي) ---
+# --- 7. خدمة تخطي الموقع VPN (بروكسي) ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_vpn')
 def vpn_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -1138,7 +1184,7 @@ def vpn_loko_packages(call):
   )
 
 
-# --- 7. خدمات ويندوز / WINDOWS SERVICES ---
+# --- 8. خدمات ويندوز / WINDOWS SERVICES ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_windows')
 def windows_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -1162,7 +1208,7 @@ def windows_menu(call):
   )
 
 
-# --- 8. خدمات مزودين الانترنت / INTERNET SERVICES ---
+# --- 9. خدمات مزودين الانترنت / INTERNET SERVICES ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_internet')
 def internet_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -1202,7 +1248,7 @@ def internet_menu(call):
   )
 
 
-# --- 9. خدمات شام كاش / SHAM CASH ---
+# --- 🔟. خدمات شام كاش / SHAM CASH ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_sham_cash')
 def sham_cash_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -1237,7 +1283,7 @@ def sham_cash_menu(call):
   )
 
 
-# --- 🔟. خدمة العملاء / SUPPORT TEAM ---
+# --- 1️⃣1️⃣. خدمة العملاء / SUPPORT TEAM ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_support')
 def support_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
