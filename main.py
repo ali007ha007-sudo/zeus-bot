@@ -464,27 +464,27 @@ def ai_menu(call):
   markup.add(
       InlineKeyboardButton(
           f'ChatGPT Plus: تفعيل شخصي 1 شهر ({price_text(19)})',
-          callback_data='order_AI_ChatGPT_Plus_1M_$19',
+          callback_data='order_AI_ChatGPT_Plus_شهر1_$19',
       ),
       InlineKeyboardButton(
           f'Gemini AI: تفعيل شخصي 6 أشهر ({price_text(12)})',
-          callback_data='order_AI_Gemini_6M_$12',
+          callback_data='order_AI_Gemini_6شهور_$12',
       ),
       InlineKeyboardButton(
           f'Gemini AI Pro: تفعيل 1 شهر ({price_text(3.7)})',
-          callback_data='order_AI_GeminiPro_1M_$3.7',
+          callback_data='order_AI_GeminiPro_1 شهر_$3.7',
       ),
       InlineKeyboardButton(
           f'Gemini AI Pro: تفعيل 12 شهر ({price_text(49)})',
-          callback_data='order_AI_GeminiPro_12M_$49',
+          callback_data='order_AI_GeminiPro_12 شهر_$49',
       ),
       InlineKeyboardButton(
           f'CapCut Pro: تفعيل شخصي 1 شهر ({price_text(15)})',
-          callback_data='order_AI_CapCut_1M_$15',
+          callback_data='order_AI_CapCut_1 شهر_$15',
       ),
       InlineKeyboardButton(
           f'Canva Pro: تفعيل شخصي مع جميع الميزات 12 شهر ({price_text(14)})',
-          callback_data='order_AI_Canva_12M_$14',
+          callback_data='order_AI_Canva_12 شهر _$14',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
