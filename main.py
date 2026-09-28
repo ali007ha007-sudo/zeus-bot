@@ -468,28 +468,28 @@ def ai_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          f'ChatGPT Plus: تفعيل شخصي 1 شهر ({price_text(19)})',
+          f'ChatGPT Plus: 1 Month تفعيل شخصي ({price_text(19)})',
           callback_data='order_AI_ChatGPT_Plus_شهر1_$19',
       ),
       InlineKeyboardButton(
-          f'Gemini AI: تفعيل شخصي 6 أشهر ({price_text(12)})',
-          callback_data='order_AI_Gemini_6شهور_$12',
+          f'Gemini AI: 6 Months تفعيل شخصي  ({price_text(12)})',
+          callback_data='order_AI_Gemini_6 Months _$12',
       ),
       InlineKeyboardButton(
-          f'Gemini AI Pro: تفعيل 1 شهر ({price_text(3.7)})',
-          callback_data='order_AI_GeminiPro_1 شهر_$3.7',
+          f'Gemini AI Pro: تفعيل 1 Month ({price_text(3.7)})',
+          callback_data='order_AI_GeminiPro_ 6 Months _$3.7',
       ),
       InlineKeyboardButton(
-          f'Gemini AI Pro: تفعيل 12 شهر ({price_text(49)})',
+          f'Gemini AI Pro: تفعيل 12 Months ({price_text(49)})',
           callback_data='order_AI_GeminiPro_12 شهر_$49',
       ),
       InlineKeyboardButton(
-          f'CapCut Pro: تفعيل شخصي 1 شهر ({price_text(15)})',
-          callback_data='order_AI_CapCut_1 شهر_$15',
+          f'CapCut Pro: تفعيل شخصي 1 Month ({price_text(15)})',
+          callback_data='order_AI_CapCut_1 Month $15',
       ),
       InlineKeyboardButton(
-          f'Canva Pro: تفعيل شخصي مع جميع الميزات 12 شهر ({price_text(14)})',
-          callback_data='order_AI_Canva_12 شهر _$14',
+          f'Canva Pro: تفعيل شخصي مع جميع الميزات 12 Months ({price_text(14)})',
+          callback_data='order_AI_Canva_12 Months _$14',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
