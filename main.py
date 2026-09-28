@@ -66,7 +66,7 @@ def get_persistent_keyboard():
   return markup
 
 
-# دالة أزرار التواصل المباشر مع الإدارة (تليجرام)
+# دالة أزرار التواصل المباشر مع الإدارة (تليجرام) - تم تحديث معرف Alaa هنا
 def get_support_markup():
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
@@ -74,7 +74,7 @@ def get_support_markup():
           '👤 مراسلة ALI (تليجرام)', url='https://t.me/Ali00700Ali'
       ),
       InlineKeyboardButton(
-          '👤 مراسلة ALAA (تليجرام)', url='https://t.me/Alaaessa19'
+          '👤 مراسلة ALAA (تليجرام)', url='https://t.me/Alaaoo7'
       ),
       InlineKeyboardButton(
           '🚨 قسم الشكاوى والاستفسارات', url='https://t.me/Ali00700Ali'
