@@ -537,7 +537,8 @@ def chat_menu(call):
 
 # معالجة أزرار التطبيقات غير المتاحة (قريباً)
 @bot.callback_query_handler(
-    func=lambda call: call.data in ['chat_lama_soon', 'chat_lggo_soon', chat_Taka_soon]
+    func=lambda call: call.data
+    in ['chat_lama_soon', 'chat_lggo_soon', 'chat_Taka_soon']
 )
 def coming_soon_handler(call):
   bot.answer_callback_query(
@@ -545,6 +546,7 @@ def coming_soon_handler(call):
       text='هذه الخدمة ستتوفر قريباً ⏳️ Coming soon',
       show_alert=True,
   )
+
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'chat_bigo')
