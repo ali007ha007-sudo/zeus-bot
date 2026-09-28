@@ -211,7 +211,7 @@ def handle_persistent_buttons(message):
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(
         InlineKeyboardButton(
-            '👤 تواصل مع ALI ', url='https://t.me/@Ali00700Ali'
+            '👤 تواصل مع ALI ', url='t.me/Ali00700Ali'
         ),
         InlineKeyboardButton(
             '👤 تواصل مع ALAA ', url='https://t.me/@Alaaoo7'
