@@ -1,5 +1,6 @@
 import os
 import threading
+import re
 from flask import Flask
 import telebot
 from telebot.types import (
@@ -83,7 +84,7 @@ def send_order_to_admin(message, service_name, user_input):
     print(f'Error sending notification: {e}')
 
 
-# 📸 استقبال صور إيصالات الدفع من العملاء وتحويلها للإدارة فوراً (تم تصحيحها لضمان وصول الصورة)
+# 📸 استقبال صور إيصالات الدفع من العملاء وتحويلها للإدارة فوراً
 @bot.message_handler(content_types=['photo'])
 def handle_client_photo(message):
   if message.from_user.id == ADMIN_ID:
@@ -116,13 +117,6 @@ def handle_client_photo(message):
     )
   except Exception as e:
     print(f'Error forwarding payment receipt photo: {e}')
-    try:
-      bot.send_message(
-          ADMIN_ID,
-          f'⚠️ فشل إرسال صورة إيصال من العميل {user.id}، يرجى مراجعة السجل.',
-      )
-    except Exception:
-      pass
 
 
 # 💳 استقبال أرقام عمليات التحويل أو نصوص إشعارات الدفع من العملاء وتحويلها فوراً
@@ -171,9 +165,6 @@ def handle_client_text_receipt(message):
     func=lambda message: message.from_user.id == ADMIN_ID
     and message.reply_to_message
 )
-import re
-
-
 def admin_reply_to_client(message):
   try:
     replied_msg = message.reply_to_message
@@ -209,7 +200,6 @@ def admin_reply_to_client(message):
   except Exception as e:
     print(f'Error sending reply to client: {e}')
     bot.reply_to(message, f'❌ حدث خطأ أثناء إرسال الرد: {e}')
-
 
 
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
@@ -592,7 +582,6 @@ def coming_soon_handler(call):
       text='هذه الخدمة ستتوفر قريباً ⏳️ Coming soon',
       show_alert=True,
   )
-
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'chat_bigo')
