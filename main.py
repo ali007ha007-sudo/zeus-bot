@@ -65,25 +65,25 @@ def get_persistent_keyboard():
   return markup
 
 
-# دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة
+# دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة (بدون Markdown لتفادي الأخطاء)
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
   notification_text = (
       f'🚨 طلب جديد بانتظار التحويل والتنفيذ!\n\n'
       f'👤 اسم العميل: {user.first_name}\n'
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
-      f'🔢 الآيدي: `{user.id}`\n'
-      f'📱 الحساب أو المعلومات المدخلة: `{user_input}`\n'
+      f'🔢 الآيدي: {user.id}\n'
+      f'📱 الحساب أو المعلومات المدخلة: {user_input}\n'
       f'📦 الخدمة المطلوبة: {service_name}\n\n'
       f'👉 بانتظار إتمام العميل للتحويل وإرسال إشعار أو رقم عملية التحويل.'
   )
   try:
-    bot.send_message(ADMIN_ID, notification_text, parse_mode='Markdown')
+    bot.send_message(ADMIN_ID, notification_text)
   except Exception as e:
     print(f'Error sending notification: {e}')
 
 
-# 📸 استقبال صور إيصالات الدفع من العملاء وتحويلها للإدارة فوراً
+# 📸 استقبال صور إيصالات الدفع من العملاء وتحويلها للإدارة فوراً (تم تصحيحها لضمان وصول الصورة)
 @bot.message_handler(content_types=['photo'])
 def handle_client_photo(message):
   if message.from_user.id == ADMIN_ID:
@@ -93,10 +93,10 @@ def handle_client_photo(message):
   photo_file_id = message.photo[-1].file_id
 
   caption = (
-      f'📸 **إيصال دفع جديد (صورة) مرسل من عميل!**\n\n'
+      f'📸 إيصال دفع جديد (صورة) مرسل من عميل!\n\n'
       f'👤 اسم العميل: {user.first_name}\n'
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
-      f'🔢 الآيدي: `{user.id}`\n\n'
+      f'🔢 الآيدي: {user.id}\n\n'
       f'👉 يرجى التحقق من وصول المبلغ على المحافظ (شام كاش / بينانس / بلازما) لتنفيذ الطلب.'
   )
 
@@ -106,7 +106,6 @@ def handle_client_photo(message):
         photo_file_id,
         caption=caption,
         reply_markup=get_persistent_keyboard(),
-        parse_mode='Markdown',
     )
     bot.reply_to(
         message,
@@ -117,6 +116,13 @@ def handle_client_photo(message):
     )
   except Exception as e:
     print(f'Error forwarding payment receipt photo: {e}')
+    try:
+      bot.send_message(
+          ADMIN_ID,
+          f'⚠️ فشل إرسال صورة إيصال من العميل {user.id}، يرجى مراجعة السجل.',
+      )
+    except Exception:
+      pass
 
 
 # 💳 استقبال أرقام عمليات التحويل أو نصوص إشعارات الدفع من العملاء وتحويلها فوراً
@@ -135,11 +141,11 @@ def handle_client_text_receipt(message):
   text_content = message.text
 
   notification_text = (
-      f'💰 **إشعار دفع / رقم عملية تحويل مرسل كنص من عميل!**\n\n'
+      f'💰 إشعار دفع / رقم عملية تحويل مرسل كنص من عميل!\n\n'
       f'👤 اسم العميل: {user.first_name}\n'
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
-      f'🔢 الآيدي: `{user.id}`\n\n'
-      f'📝 **النص أو رقم العملية المرسل:**\n`{text_content}`\n\n'
+      f'🔢 الآيدي: {user.id}\n\n'
+      f'📝 النص أو رقم العملية المرسل:\n`{text_content}`\n\n'
       f'👉 يرجى مطابقة رقم العملية مع الحسابات لتأكيد التحويل.'
   )
 
@@ -148,7 +154,6 @@ def handle_client_text_receipt(message):
         ADMIN_ID,
         notification_text,
         reply_markup=get_persistent_keyboard(),
-        parse_mode='Markdown',
     )
     bot.reply_to(
         message,
@@ -1354,7 +1359,7 @@ def handle_order_selection(call):
   bot.register_next_step_handler(msg, process_user_order, service_name)
 
 
-# استقبال مدخلات العميل وإرسال الإشعار للإدارة ومعلومات المحافظ (تمت إضافة الحماية للأزرار هنا)
+# استقبال مدخلات العميل وإرسال الإشعار للإدارة ومعلومات المحافظ
 def process_user_order(message, service_name):
   user_input = message.text
 
