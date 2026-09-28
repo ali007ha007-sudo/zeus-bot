@@ -1060,7 +1060,7 @@ def process_user_order(message, service_name):
             '👤 تواصل مع ALI ', url='@Ali00700Ali'
         ),
         InlineKeyboardButton(
-            '👤 تواصل مع ALAA ', url='https://t.me/@Alaaoo7'
+            '👤 تواصل مع ALAA ', url='@Alaaoo7'
         ),
         InlineKeyboardButton(
             '🚨 قسم الشكاوى (تليجرام)', url='https://t.me/Complaints_Username'
