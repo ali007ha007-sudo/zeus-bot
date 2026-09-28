@@ -1057,10 +1057,10 @@ def process_user_order(message, service_name):
     markup = InlineKeyboardMarkup(row_width=1)
     markup.add(
         InlineKeyboardButton(
-            '👤 تواصل مع ALI (تليجرام)', url='https://t.me/@Ali00700Ali'
+            '👤 تواصل مع ALI ', url='@Ali00700Ali'
         ),
         InlineKeyboardButton(
-            '👤 تواصل مع ALAA (تليجرام)', url='https://t.me/@Alaaessa199'
+            '👤 تواصل مع ALAA ', url='https://t.me/@Alaaoo7'
         ),
         InlineKeyboardButton(
             '🚨 قسم الشكاوى (تليجرام)', url='https://t.me/Complaints_Username'
