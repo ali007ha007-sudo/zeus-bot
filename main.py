@@ -992,13 +992,13 @@ def support_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '👤 تواصل مع ALI (تليجرام)', url='https://t.me/Ali_Username'
+          '👤 تواصل مع ALI ', url='https://t.me/@Ali00700Ali'
       ),
       InlineKeyboardButton(
-          '👤 تواصل مع ALAA (تليجرام)', url='https://t.me/Alaa_Username'
+          '👤 تواصل مع ALAA ', url='https://t.me/@Alaaoo7'
       ),
       InlineKeyboardButton(
-          '🚨 قسم الشكاوى (تليجرام)', url='https://t.me/Complaints_Username'
+          '🚨 قسم الشكاوى (تليجرام)', url='https://t.me/@ZEUS_FORCEbot'
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
