@@ -165,6 +165,7 @@ def handle_client_text_receipt(message):
   except Exception as e:
     print(f'Error forwarding text receipt: {e}')
 
+
 # دالة تتيح للإدارة الرد على العملاء مباشرة عبر الرد (Reply) على رسالة الإيصال الخاصة بهم
 @bot.message_handler(
     func=lambda message: message.from_user.id == ADMIN_ID
@@ -208,6 +209,7 @@ def admin_reply_to_client(message):
   except Exception as e:
     print(f'Error sending reply to client: {e}')
     bot.reply_to(message, f'❌ حدث خطأ أثناء إرسال الرد: {e}')
+
 
 
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
