@@ -522,7 +522,7 @@ def chat_menu(call):
           'Lggo Live 🟢 (قريباً ⏳️)', callback_data='chat_lggo_soon'
       ),
       InlineKeyboardButton(
-          'Taka Live Chat 🎙️ (قريباً ⏳️)', callback_data='order_Taka_Live'
+          'Taka Live Chat 🎙️ (قريباً ⏳️)', callback_data='chat_Taka_soon'
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
