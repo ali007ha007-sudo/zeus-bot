@@ -66,6 +66,24 @@ def get_persistent_keyboard():
   return markup
 
 
+# دالة أزرار التواصل المباشر مع الإدارة (تليجرام)
+def get_support_markup():
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton(
+          '👤 مراسلة ALI (تليجرام)', url='https://t.me/Ali00700Ali'
+      ),
+      InlineKeyboardButton(
+          '👤 مراسلة ALAA (تليجرام)', url='https://t.me/Alaaessa19'
+      ),
+      InlineKeyboardButton(
+          '🚨 قسم الشكاوى والاستفسارات', url='https://t.me/Ali00700Ali'
+      ),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  )
+  return markup
+
+
 # دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة (بدون Markdown لتفادي الأخطاء)
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
@@ -173,13 +191,11 @@ def admin_reply_to_client(message):
     if not replied_text:
       return
 
-    # استخراج الآيدي الرقمي للعميل تلقائياً من نص الإشعار المرسل إليك
     match = re.search(r'🔢 الآيدي:\s*(\d+)', replied_text)
     if match:
       client_id = int(match.group(1))
       admin_text = message.text
 
-      # إرسال رسالة النجاح وتنفيذ الطلب للعميل
       bot.send_message(
           client_id,
           f'🎉 **تحديث بخصوص طلبك من ZEUS:**\n\n{admin_text}',
@@ -187,7 +203,6 @@ def admin_reply_to_client(message):
           parse_mode='Markdown',
       )
 
-      # تأكيد لك أنت كأدمن أن الرسالة وصلت للعميل
       bot.reply_to(
           message, '✅ **تم إرسال إشعار اكتمال الطلب للعميل بنجاح!**'
       )
@@ -213,16 +228,12 @@ def handle_persistent_buttons(message):
   elif message.text == '📞 الدعم الفني / Support':
     support_text = (
         '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
-        'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
-        '👤 **ALI:** `0951984521`\n'
-        '👤 **ALAA:** `0996743743`\n'
-        '🚨 **الشكاوى:** `0995611608`\n\n'
-        'نحن في خدمتكم دائماً ❤️'
+        'لأي استفسار أو طلب خاص يرجى التواصل المباشر مع الإدارة عبر الأزرار أدناه:'
     )
     bot.send_message(
         message.chat.id,
         support_text,
-        reply_markup=get_persistent_keyboard(),
+        reply_markup=get_support_markup(),
         parse_mode='Markdown',
     )
 
@@ -340,7 +351,7 @@ def back_home(call):
   )
 
 
-# --- 1. قسم الألعاب / GAMES ---
+# --- بقية أقسام البوت (الألعاب، الذكاء الاصطناعي، التطبيقات، الخ...) ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_games')
 def games_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -571,7 +582,6 @@ def chat_menu(call):
   )
 
 
-# معالجة أزرار التطبيقات غير المتاحة (قريباً)
 @bot.callback_query_handler(
     func=lambda call: call.data
     in ['chat_lama_soon', 'chat_lggo_soon', 'chat_Taka_soon']
@@ -1328,21 +1338,15 @@ def sham_cash_menu(call):
 # --- 1️⃣1️⃣. خدمة العملاء / SUPPORT TEAM ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_support')
 def support_menu(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'))
   support_text = (
       '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
-      'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
-      '👤 **ALI:** `0951984521`\n'
-      '👤 **ALAA:** `0996743743`\n'
-      '🚨 **الشكاوى:** `0995611608`\n\n'
-      'نحن في خدمتكم دائماً ❤️'
+      'لأي استفسار أو طلب خاص يرجى التواصل المباشر مع الإدارة عبر الأزرار أدناه:'
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
       text=support_text,
-      reply_markup=markup,
+      reply_markup=get_support_markup(),
       parse_mode='Markdown',
   )
 
@@ -1353,7 +1357,6 @@ def support_menu(call):
     or call.data.startswith('chat_')
 )
 def handle_order_selection(call):
-  # تخصيص اسم الخدمة إذا كانت تتعلق بتحويلات شام كاش
   if call.data.startswith('order_Sham_'):
     sham_type = call.data.replace('order_Sham_', '')
     if sham_type == 'SYP_USD':
@@ -1396,34 +1399,25 @@ def handle_order_selection(call):
   bot.register_next_step_handler(msg, process_user_order, service_name)
 
 
-# استقبال مدخلات العميل وإرسال الإشعار للإدارة ومعلومات المحافظ
 def process_user_order(message, service_name):
   user_input = message.text
 
-  # 1. التحقق مما إذا كان العميل ضغط على زر "القائمة الرئيسية" أثناء إدخال البيانات
   if user_input == '🏠 القائمة الرئيسية / Main Menu':
     send_welcome(message)
     return
-
-  # 2. التحقق مما إذا كان العميل ضغط على زر "الدعم الفني" أثناء إدخال البيانات
   elif user_input == '📞 الدعم الفني / Support':
     support_text = (
         '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
-        'لأي استفسار أو طلب خاص يرجى التواصل مع الإدارة عبر الأرقام التالية:\n\n'
-        '👤 **ALI:** `0951984521`\n'
-        '👤 **ALAA:** `0996743743`\n'
-        '🚨 **الشكاوى:** `0995611608`\n\n'
-        'نحن في خدمتكم دائماً ❤️'
+        'لأي استفسار أو طلب خاص يرجى التواصل المباشر مع الإدارة عبر الأزرار أدناه:'
     )
     bot.send_message(
         message.chat.id,
         support_text,
-        reply_markup=get_persistent_keyboard(),
+        reply_markup=get_support_markup(),
         parse_mode='Markdown',
     )
     return
 
-  # 3. إذا كان النص عبارة عن بيانات عادية (ID أو معلومات الحساب)، يتم متابعة الطلب طبيعياً
   send_order_to_admin(message, service_name, user_input)
 
   caption_text = (
