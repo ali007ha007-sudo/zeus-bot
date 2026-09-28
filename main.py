@@ -66,7 +66,7 @@ def get_persistent_keyboard():
   return markup
 
 
-# دالة أزرار التواصل المباشر مع الإدارة (تليجرام) - تم تحديث معرف Alaa هنا
+# دالة أزرار التواصل المباشر مع الإدارة (تليجرام)
 def get_support_markup():
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
@@ -84,7 +84,7 @@ def get_support_markup():
   return markup
 
 
-# دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة (بدون Markdown لتفادي الأخطاء)
+# دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
   notification_text = (
@@ -178,7 +178,7 @@ def handle_client_text_receipt(message):
     print(f'Error forwarding text receipt: {e}')
 
 
-# دالة تتيح للإدارة الرد على العملاء مباشرة عبر الرد (Reply) على رسالة الإيصال الخاصة بهم
+# دالة تتيح للإدارة الرد على العملاء مباشرة عبر الرد (Reply)
 @bot.message_handler(
     func=lambda message: message.from_user.id == ADMIN_ID
     and message.reply_to_message
@@ -934,23 +934,33 @@ def likee_packages(call):
   )
 
 
-# --- 4. تعبئة الرصيد / RECHARGE ---
+# --- 4. تعبئة الرصيد / RECHARGE (محدث بالخيارات الجديدة) ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_recharge')
 def recharge_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton(
-          '📱 Syriatel Recharge', callback_data='order_Recharge_Syriatel'
+          '📱 SYRIATEL RECHARGE / رصيد سيريتل',
+          callback_data='order_Recharge_Syriatel',
       ),
       InlineKeyboardButton(
-          '📱 MTN Syria Recharge', callback_data='order_Recharge_MTN'
+          '📱 MTN RECHARGE / رصيد ام تي ان',
+          callback_data='order_Recharge_MTN',
+      ),
+      InlineKeyboardButton(
+          '💳 SYRIATEL CASH / كاش سيريتل',
+          callback_data='order_Recharge_SyriatelCash',
+      ),
+      InlineKeyboardButton(
+          '💳 MTN CASH / كاش ام تي ان',
+          callback_data='order_Recharge_MTNCash',
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='💳 **اختر الشبكة لتعبئة الرصيد:**',
+      text='💳 **اختر الخدمة المطلوبة في قسم التعبئة والكاش:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
