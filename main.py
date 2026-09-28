@@ -165,6 +165,50 @@ def handle_client_text_receipt(message):
   except Exception as e:
     print(f'Error forwarding text receipt: {e}')
 
+# دالة تتيح للإدارة الرد على العملاء مباشرة عبر الرد (Reply) على رسالة الإيصال الخاصة بهم
+@bot.message_handler(
+    func=lambda message: message.from_user.id == ADMIN_ID
+    and message.reply_to_message
+)
+import re
+
+
+def admin_reply_to_client(message):
+  try:
+    replied_msg = message.reply_to_message
+    replied_text = replied_msg.text or replied_msg.caption
+
+    if not replied_text:
+      return
+
+    # استخراج الآيدي الرقمي للعميل تلقائياً من نص الإشعار المرسل إليك
+    match = re.search(r'🔢 الآيدي:\s*(\d+)', replied_text)
+    if match:
+      client_id = int(match.group(1))
+      admin_text = message.text
+
+      # إرسال رسالة النجاح وتنفيذ الطلب للعميل
+      bot.send_message(
+          client_id,
+          f'🎉 **تحديث بخصوص طلبك من ZEUS:**\n\n{admin_text}',
+          reply_markup=get_persistent_keyboard(),
+          parse_mode='Markdown',
+      )
+
+      # تأكيد لك أنت كأدمن أن الرسالة وصلت للعميل
+      bot.reply_to(
+          message, '✅ **تم إرسال إشعار اكتمال الطلب للعميل بنجاح!**'
+      )
+    else:
+      bot.reply_to(
+          message,
+          '⚠️ لم يتم العثور على آيدي العميل في الرسالة الأصلية التي ردرت'
+          ' عليها.',
+      )
+  except Exception as e:
+    print(f'Error sending reply to client: {e}')
+    bot.reply_to(message, f'❌ حدث خطأ أثناء إرسال الرد: {e}')
+
 
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
 @bot.message_handler(
