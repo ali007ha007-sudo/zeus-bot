@@ -112,7 +112,7 @@ TRX_WALLET = 'TKva4xbJjCtwGy2vDFAoddsSd91aKZ5zqK'
 PLASMA_WALLET = '0xb027c9b07f2b4ffffcf7a56fc80af180f8692c67'
 
 # ==========================================
-# 💱 إعدادات سعر الصرف
+# 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
 # ==========================================
 USD_TO_SYP_RATE = 14000
 
@@ -122,6 +122,7 @@ def price_text(usd_amount):
   return f'${usd_amount} ({syp_amount:,} ل.س)'
 
 
+# لوحة المفاتيح الثابتة المحدثة (تتضمن زر المحفظة)
 def get_persistent_keyboard():
   markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
   markup.add(
@@ -149,6 +150,7 @@ def get_support_markup():
   return markup
 
 
+# دالة إرسال الطلب للإدارة مع زر لإضافة رصيد للعميل مباشرة
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
   notification_text = (
@@ -181,7 +183,7 @@ def handle_client_photo(message):
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
       f'🔢 الآيدي: {user.id}\n\n'
       f'👉 للتحقق من الشحن، قم بالرد على هذه الرسالة بالأمر:\n'
-      f'`/add {user.id} [المبلغ]`'
+      f'`/add {user.id} [المبلغ]` (مثال: `/add {user.id} 10` لإضافة 10 دولار لرصيده).'
   )
 
   try:
@@ -292,6 +294,7 @@ def admin_reply_to_client(message):
   try:
     replied_msg = message.reply_to_message
     replied_text = replied_msg.text or replied_msg.caption
+
     if not replied_text:
       return
 
@@ -306,6 +309,7 @@ def admin_reply_to_client(message):
           reply_markup=get_persistent_keyboard(),
           parse_mode='Markdown',
       )
+
       bot.reply_to(
           message, '✅ **تم إرسال إشعار اكتمال الطلب للعميل بنجاح!**'
       )
@@ -314,7 +318,7 @@ def admin_reply_to_client(message):
 
 
 # ==========================================
-# 🎛️ أزرار القوائم والتحكم الثابتة
+# 🎛️ أزرار القوائم والتحكم
 # ==========================================
 
 
@@ -341,7 +345,7 @@ def handle_persistent_buttons(message):
         f'💵 **رصيدك الحالي:**\n'
         f'• **${balance:.2f}** دولار أمريكي\n'
         f'• **{syp_balance:,}** ليرة سورية\n\n'
-        f'📌 يمكنك شحن رصيد محفظتك عبر تحويل المبلغ إلى أحد عناويننا أدناه ثم إرسال الإيصال:'
+        f'📌 يمكنك شحن رصيد محفظتك عبر تحويل المبلغ إلى أحد عناويننا أدناه ثم إرسال الإيصال (صورة أو رقم عملية):'
     )
 
     markup = InlineKeyboardMarkup(row_width=1)
@@ -379,7 +383,7 @@ def show_deposit_methods(call):
       f'1️⃣ **شام كاش (Sham Cash):**\n`{SHAM_CASH_WALLET}`\n\n'
       f'2️⃣ **بينانس TRX (TRC20):**\n`{TRX_WALLET}`\n\n'
       f'3️⃣ **بلازما (Plasma):**\n`{PLASMA_WALLET}`\n\n'
-      f'📝 **بعد إتمام التحويل، يرجى إرسال صورة الإيصال أو رقم العملية هنا.**'
+      f'📝 **بعد إتمام التحويل، يرجى إرسال صورة الإيصال أو رقم العملية هنا في المحادثة** لتقوم الإدارة بشحن رصيدك فوراً.'
   )
   markup = InlineKeyboardMarkup()
   markup.add(InlineKeyboardButton('🔙 رجوع للمحفظة', callback_data='back_wallet'))
@@ -428,11 +432,7 @@ def back_wallet_handler(call):
     pass
 
 
-# ==========================================
-# 📁 القائمة الرئيسية وأقسام الخدمات بالكامل
-# ==========================================
-
-
+# أمر البدء الرئيسي /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
   welcome_text = (
@@ -464,7 +464,7 @@ def send_welcome(message):
           callback_data='menu_various',
       ),
       InlineKeyboardButton(
-          '7️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️️', callback_data='menu_vpn'
+          '7️⃣ خدمة تخطي الموقع VPN (بروكسي) 🛡️', callback_data='menu_vpn'
       ),
       InlineKeyboardButton(
           '8️⃣ خدمات ويندوز / WINDOWS SERVICES 💻',
@@ -490,6 +490,7 @@ def send_welcome(message):
   bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
 
 
+# زر العودة للقائمة الرئيسية
 @bot.callback_query_handler(func=lambda call: call.data == 'back_home')
 def back_home(call):
   welcome_text = (
@@ -547,270 +548,9 @@ def back_home(call):
     pass
 
 
-# 1️⃣ الألعاب
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_games')
-def menu_games(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'PUBG Mobile (شدات)', callback_data='order_PUBG_Mobile'
-      ),
-      InlineKeyboardButton(
-          'Free Fire (جواهر)', callback_data='order_Free_Fire'
-      ),
-      InlineKeyboardButton('Roblox (روبوكس)', callback_data='order_Roblox'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='🎮 **قسم الألعاب - اختر الخدمة:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 2️⃣ الذكاء الاصطناعي
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_ai')
-def menu_ai(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'ChatGPT Plus / Team', callback_data='order_ChatGPT_Plus'
-      ),
-      InlineKeyboardButton('Claude AI Pro', callback_data='order_Claude_AI'),
-      InlineKeyboardButton(
-          'Midjourney Subscription', callback_data='order_Midjourney'
-      ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='💭 **قسم الذكاء الاصطناعي - اختر الخدمة:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 3️⃣ التطبيقات الصوتية والدردشة
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_chat')
-def menu_chat(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton('Telegram Premium', callback_data='chat_Telegram_Prem'),
-      InlineKeyboardButton('Discord Nitro', callback_data='chat_Discord_Nitro'),
-      InlineKeyboardButton('Bigo Live شحن', callback_data='chat_Bigo_Live'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='💬 **قسم التطبيقات والدردشة - اختر الخدمة:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 4️⃣ تعبئة الرصيد
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_recharge')
-def menu_recharge(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'شحن باير (Payeer)', callback_data='order_Payeer_Recharge'
-      ),
-      InlineKeyboardButton(
-          'شحن بينانس (Binance Pay)', callback_data='order_Binance_Pay'
-      ),
-      InlineKeyboardButton('شحن باي بال (PayPal)', callback_data='order_PayPal'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='💳 **قسم تعبئة الرصيد - اختر المنصة:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 5️⃣ توثيق الحسابات
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_verify')
-def menu_verify(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'توثيق علامة تليجرام الزرقاء', callback_data='order_Telegram_Verify'
-      ),
-      InlineKeyboardButton(
-          'توثيق منصة إكس (Twitter Blue)', callback_data='order_Twitter_Blue'
-      ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='🔐 **قسم توثيق الحسابات - اختر المنصة:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 6️⃣ خدمات متنوعة
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_various')
-def menu_various(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'إنشاء بطاقة وهمية VCC للدفع', callback_data='order_VCC_Card'
-      ),
-      InlineKeyboardButton(
-          'شحن اشتراكات نتفلكس (Netflix)', callback_data='order_Netflix'
-      ),
-      InlineKeyboardButton(
-          'شحن يوتيوب بريميوم (YouTube)', callback_data='order_YouTube'
-      ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='🌐 **الخدمات المتنوعة - اختر الخدمة:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 7️⃣ خدمة تخطي الموقع VPN (بروكسي)
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_vpn')
-def menu_vpn(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton('بروكسي خاص (Private Proxy)', callback_data='order_Proxy'),
-      InlineKeyboardButton('اشتراك NordVPN', callback_data='order_NordVPN'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='🛡️ **قسم الـ VPN والبروكسيات:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 8️⃣ خدمات ويندوز
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_windows')
-def menu_windows(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton(
-          'تفعيل ويندوز 10 / 11 أصلي', callback_data='order_Windows_Key'
-      ),
-      InlineKeyboardButton(
-          'تفعيل أوفيس (Office 365 / 2021)', callback_data='order_Office_Key'
-      ),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='💻 **قسم خدمات ويندوز والتفعيل:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 9️⃣ خدمات مزودين الانترنت
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_internet')
-def menu_internet(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton('تعبئة بوابات إنترنت (سيرز/سوداتل/..)', callback_data='order_ISP'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='🌐 **خدمات مزودي الإنترنت:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 🔟 خدمات شام كاش
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_sham_cash')
-def menu_sham_cash(call):
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton('تحويل أموال شام كاش (داخلية)', callback_data='order_Sham_Transfer'),
-      InlineKeyboardButton('دفع فواتير عبر شام كاش', callback_data='order_Sham_Bills'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text='💸 **خدمات شام كاش:**',
-        reply_markup=markup,
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# 1️⃣1️⃣ خدمة العملاء
-@bot.callback_query_handler(func=lambda call: call.data == 'menu_support')
-def menu_support(call):
-  support_text = (
-      '📞 **خدمة العملاء والدعم الفني - ZEUS**\n\n'
-      'لأي استفسار أو طلب خاص يرجى التواصل المباشر مع الإدارة عبر الأزرار أدناه:'
-  )
-  try:
-    bot.edit_message_text(
-        chat_id=call.message.chat.id,
-        message_id=call.message.message_id,
-        text=support_text,
-        reply_markup=get_support_markup(),
-        parse_mode='Markdown',
-    )
-  except Exception:
-    pass
-
-
-# معالجة الطلبات العامة والألعاب والخدمات
 @bot.callback_query_handler(
     func=lambda call: call.data.startswith('order_')
     or call.data.startswith('chat_')
-    or call.data.startswith('game_')
 )
 def handle_order_selection(call):
   if call.data.startswith('order_Sham_'):
@@ -818,10 +558,7 @@ def handle_order_selection(call):
     service_name = f'شام كاش ({sham_type})'
   else:
     service_name = (
-        call.data.replace('order_', '')
-        .replace('chat_', '')
-        .replace('game_', '')
-        .replace('_', ' ')
+        call.data.replace('order_', '').replace('chat_', '').replace('_', ' ')
     )
 
   prompt_text = (
@@ -873,7 +610,7 @@ def process_user_order(message, service_name):
 
 
 if __name__ == '__main__':
-  print('ZEUS Bot is running with all sections...')
+  print('ZEUS Bot is running...')
   while True:
     try:
       bot.infinity_polling(timeout=60, long_polling_timeout=60)
