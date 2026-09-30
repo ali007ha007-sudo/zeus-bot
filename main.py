@@ -30,7 +30,7 @@ def run_web_server():
   app.run(host='0.0.0.0', port=port)
 
 
-threading.Thread(target=run_web_server).start()
+threading.Thread(target=run_web_server, daemon=True).start()
 
 # جلب توكن البوت بأمان من إعدادات منصة Render
 TOKEN = os.environ.get('TOKEN')
@@ -40,58 +40,68 @@ bot = telebot.TeleBot(TOKEN)
 ADMIN_ID = 1632433018
 
 # ==========================================
-# 🗄️ إعداد قاعدة البيانات للمحافظ والأرصدة
+# 🗄️ إعداد قاعدة البيانات الآمنة للمحافظ والأرصدة
 # ==========================================
 
 
 def init_db():
-  conn = sqlite3.connect('zeus_wallet.db')
-  cursor = conn.cursor()
-  cursor.execute('''
-        CREATE TABLE IF NOT EXISTS users (
-            user_id INTEGER PRIMARY KEY,
-            username TEXT,
-            first_name TEXT,
-            balance REAL DEFAULT 0.0
-        )
-    ''')
-  conn.commit()
-  conn.close()
+  try:
+    conn = sqlite3.connect('zeus_wallet.db', timeout=10)
+    cursor = conn.cursor()
+    cursor.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                username TEXT,
+                first_name TEXT,
+                balance REAL DEFAULT 0.0
+            )
+        ''')
+    conn.commit()
+    conn.close()
+  except Exception as e:
+    print(f'Database init error: {e}')
 
 
 init_db()
 
 
 def get_user_balance(user_id, username, first_name):
-  conn = sqlite3.connect('zeus_wallet.db')
-  cursor = conn.cursor()
-  cursor.execute(
-      'SELECT balance FROM users WHERE user_id = ?', (user_id,)
-  )
-  row = cursor.fetchone()
-  if row is None:
+  try:
+    conn = sqlite3.connect('zeus_wallet.db', timeout=10)
+    cursor = conn.cursor()
     cursor.execute(
-        'INSERT INTO users (user_id, username, first_name, balance) VALUES'
-        ' (?, ?, ?, 0.0)',
-        (user_id, username, first_name),
+        'SELECT balance FROM users WHERE user_id = ?', (user_id,)
     )
-    conn.commit()
-    balance = 0.0
-  else:
-    balance = row[0]
-  conn.close()
-  return balance
+    row = cursor.fetchone()
+    if row is None:
+      cursor.execute(
+          'INSERT INTO users (user_id, username, first_name, balance) VALUES'
+          ' (?, ?, ?, 0.0)',
+          (user_id, username, first_name),
+      )
+      conn.commit()
+      balance = 0.0
+    else:
+      balance = row[0]
+    conn.close()
+    return balance
+  except Exception as e:
+    print(f'Error getting balance: {e}')
+    return 0.0
 
 
 def update_user_balance(user_id, amount):
-  conn = sqlite3.connect('zeus_wallet.db')
-  cursor = conn.cursor()
-  cursor.execute(
-      'UPDATE users SET balance = balance + ? WHERE user_id = ?',
-      (amount, user_id),
-  )
-  conn.commit()
-  conn.close()
+  try:
+    conn = sqlite3.connect('zeus_wallet.db', timeout=10)
+    cursor = conn.cursor()
+    cursor.execute(
+        'UPDATE users SET balance = balance + ? WHERE user_id = ?',
+        (amount, user_id),
+    )
+    conn.commit()
+    conn.close()
+  except Exception as e:
+    print(f'Error updating balance: {e}')
 
 
 # ==========================================
@@ -102,7 +112,7 @@ TRX_WALLET = 'TKva4xbJjCtwGy2vDFAoddsSd91aKZ5zqK'
 PLASMA_WALLET = '0xb027c9b07f2b4ffffcf7a56fc80af180f8692c67'
 
 # ==========================================
-# 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
+# 💱 إعدادات سعر الصرف
 # ==========================================
 USD_TO_SYP_RATE = 14000
 
@@ -112,7 +122,6 @@ def price_text(usd_amount):
   return f'${usd_amount} ({syp_amount:,} ل.س)'
 
 
-# لوحة المفاتيح الثابتة المحدثة (تتضمن زر المحفظة)
 def get_persistent_keyboard():
   markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
   markup.add(
@@ -140,7 +149,6 @@ def get_support_markup():
   return markup
 
 
-# دالة إرسال الطلب للإدارة مع زر لإضافة رصيد للعميل مباشرة
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
   notification_text = (
@@ -173,7 +181,7 @@ def handle_client_photo(message):
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
       f'🔢 الآيدي: {user.id}\n\n'
       f'👉 للتحقق من الشحن، قم بالرد على هذه الرسالة بالأمر:\n'
-      f'`/add {user.id} [المبلغ]` (مثال: `/add {user.id} 10` لإضافة 10 دولار لرصيده).'
+      f'`/add {user.id} [المبلغ]`'
   )
 
   try:
@@ -195,7 +203,7 @@ def handle_client_photo(message):
     print(f'Error forwarding payment receipt photo: {e}')
 
 
-# 💳 استقبال النصوص ورسائل التحويل
+# 💳 استقبال النصوص ورسائل التحويل (مع معالجة الأزرار الثابتة لعدم تجميد البوت)
 @bot.message_handler(
     content_types=['text'],
     func=lambda message: message.from_user.id != ADMIN_ID
@@ -208,7 +216,6 @@ def handle_client_photo(message):
     ],
 )
 def handle_client_text_receipt(message):
-  # التعامل مع أمر إضافة رصيد الخاص بالأدمن إذا كتبه بالخطأ (يتم تجاهله هنا)
   if message.text.startswith('/add'):
     return
 
@@ -264,7 +271,6 @@ def admin_add_balance(message):
 
     update_user_balance(target_user_id, amount)
 
-    # إشعار العميل بأن رصيده قد تم شحنه
     bot.send_message(
         target_user_id,
         f'🎉 **تم شحن محفظتك بنجاح!**\n💵 المبلغ المضاف: **${amount}**',
@@ -278,7 +284,6 @@ def admin_add_balance(message):
     bot.reply_to(message, f'❌ حدث خطأ: {e}')
 
 
-# دالة تتيح للإدارة الرد على العملاء مباشرة
 @bot.message_handler(
     func=lambda message: message.from_user.id == ADMIN_ID
     and message.reply_to_message
@@ -287,7 +292,6 @@ def admin_reply_to_client(message):
   try:
     replied_msg = message.reply_to_message
     replied_text = replied_msg.text or replied_msg.caption
-
     if not replied_text:
       return
 
@@ -302,7 +306,6 @@ def admin_reply_to_client(message):
           reply_markup=get_persistent_keyboard(),
           parse_mode='Markdown',
       )
-
       bot.reply_to(
           message, '✅ **تم إرسال إشعار اكتمال الطلب للعميل بنجاح!**'
       )
@@ -338,7 +341,7 @@ def handle_persistent_buttons(message):
         f'💵 **رصيدك الحالي:**\n'
         f'• **${balance:.2f}** دولار أمريكي\n'
         f'• **{syp_balance:,}** ليرة سورية\n\n'
-        f'📌 يمكنك شحن رصيد محفظتك عبر تحويل المبلغ إلى أحد عناويننا أدناه ثم إرسال الإيصال (صورة أو رقم عملية):'
+        f'📌 يمكنك شحن رصيد محفظتك عبر تحويل المبلغ إلى أحد عناويننا أدناه ثم إرسال الإيصال:'
     )
 
     markup = InlineKeyboardMarkup(row_width=1)
@@ -376,17 +379,20 @@ def show_deposit_methods(call):
       f'1️⃣ **شام كاش (Sham Cash):**\n`{SHAM_CASH_WALLET}`\n\n'
       f'2️⃣ **بينانس TRX (TRC20):**\n`{TRX_WALLET}`\n\n'
       f'3️⃣ **بلازما (Plasma):**\n`{PLASMA_WALLET}`\n\n'
-      f'📝 **بعد إتمام التحويل، يرجى إرسال صورة الإيصال أو رقم العملية هنا في المحادثة** لتقوم الإدارة بشحن رصيدك فوراً.'
+      f'📝 **بعد إتمام التحويل، يرجى إرسال صورة الإيصال أو رقم العملية هنا.**'
   )
   markup = InlineKeyboardMarkup()
   markup.add(InlineKeyboardButton('🔙 رجوع للمحفظة', callback_data='back_wallet'))
-  bot.edit_message_text(
-      chat_id=call.message.chat.id,
-      message_id=call.message.message_id,
-      text=deposit_text,
-      reply_markup=markup,
-      parse_mode='Markdown',
-  )
+  try:
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=deposit_text,
+        reply_markup=markup,
+        parse_mode='Markdown',
+    )
+  except Exception:
+    pass
 
 
 @bot.callback_query_handler(func=lambda call: call.data == 'back_wallet')
@@ -410,16 +416,18 @@ def back_wallet_handler(call):
       ),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
-  bot.edit_message_text(
-      chat_id=call.message.chat.id,
-      message_id=call.message.message_id,
-      text=wallet_text,
-      reply_markup=markup,
-      parse_mode='Markdown',
-  )
+  try:
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=wallet_text,
+        reply_markup=markup,
+        parse_mode='Markdown',
+    )
+  except Exception:
+    pass
 
 
-# أمر البدء الرئيسي /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
   welcome_text = (
@@ -477,7 +485,6 @@ def send_welcome(message):
   bot.reply_to(message, welcome_text, reply_markup=markup, parse_mode='Markdown')
 
 
-# زر العودة للقائمة الرئيسية
 @bot.callback_query_handler(func=lambda call: call.data == 'back_home')
 def back_home(call):
   welcome_text = (
@@ -523,17 +530,37 @@ def back_home(call):
           '1️⃣1️⃣ خدمة العملاء / SUPPORT TEAM 📞', callback_data='menu_support'
       ),
   )
-  bot.edit_message_text(
-      chat_id=call.message.chat.id,
-      message_id=call.message.message_id,
-      text=welcome_text,
-      reply_markup=markup,
-      parse_mode='Markdown',
+  try:
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=welcome_text,
+        reply_markup=markup,
+        parse_mode='Markdown',
+    )
+  except Exception:
+    pass
+
+
+# أقسام البوت الفرعية (الألعاب، الذكاء الاصطناعي، الخ...)
+@bot.callback_query_handler(func=lambda call: call.data == 'menu_games')
+def games_menu(call):
+  markup = InlineKeyboardMarkup(row_width=1)
+  markup.add(
+      InlineKeyboardButton('PUBG Mobile 🎮', callback_data='game_pubg'),
+      InlineKeyboardButton('Free Fire 🔥', callback_data='game_freefire'),
+      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
-
-
-# (بقية أقسام البوت كالألعاب، الذكاء الاصطناعي، البروكسيات، إلخ تعمل بنفس الطريقة السابقة تماماً...)
-# ولحفظ مساحة الكود، تبقى الأقسام كما هي وتتوجه لمعالجة الطلب عبر الوظيفة التالية:
+  try:
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text='🎮 **اختر اللعبة المطلوبة:**',
+        reply_markup=markup,
+        parse_mode='Markdown',
+    )
+  except Exception:
+    pass
 
 
 @bot.callback_query_handler(
@@ -551,13 +578,16 @@ def handle_order_selection(call):
 
   prompt_text = (
       f'📦 الخدمة المختارة: {service_name}\n\n'
-      f'✍️️ **يرجى إرسال رقم (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
+      f'✍ **يرجى إرسال رقم (ID)، رابط الحساب، أو تفاصيل الطلب المطلوبة في رسالة واحدة:**'
   )
 
-  msg = bot.send_message(
-      call.message.chat.id, prompt_text, parse_mode='Markdown'
-  )
-  bot.register_next_step_handler(msg, process_user_order, service_name)
+  try:
+    msg = bot.send_message(
+        call.message.chat.id, prompt_text, parse_mode='Markdown'
+    )
+    bot.register_next_step_handler(msg, process_user_order, service_name)
+  except Exception as e:
+    print(f'Error in order selection: {e}')
 
 
 def process_user_order(message, service_name):
@@ -583,14 +613,21 @@ def process_user_order(message, service_name):
       f'📝 **بعد التحويل، أرسل رقم العملية أو إيصال الدفع هنا ليتم تنفيذ طلبك.**'
   )
 
-  bot.send_message(
-      message.chat.id,
-      caption_text,
-      reply_markup=get_persistent_keyboard(),
-      parse_mode='Markdown',
-  )
+  try:
+    bot.send_message(
+        message.chat.id,
+        caption_text,
+        reply_markup=get_persistent_keyboard(),
+        parse_mode='Markdown',
+    )
+  except Exception as e:
+    print(f'Error in process_user_order: {e}')
 
 
 if __name__ == '__main__':
   print('ZEUS Bot is running...')
-  bot.infinity_polling()
+  while True:
+    try:
+      bot.infinity_polling(timeout=60, long_polling_timeout=60)
+    except Exception as e:
+      print(f'Polling error occurred: {e}')
