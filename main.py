@@ -407,6 +407,43 @@ def admin_create_coupon(message):
     bot.reply_to(message, 'ℹ️ الاستخدام الصحيح:\n`/create_coupon CODE 5`', parse_mode='Markdown')
 
 
+# 📊 أمر الأدمن لعرض العملاء الذين لديهم أرصدة في محافظهم: /balances
+@bot.message_handler(commands=['balances'])
+def admin_get_users_with_balance(message):
+  if message.from_user.id != ADMIN_ID:
+    return
+
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute(
+      'SELECT user_id, first_name, username, balance_usd, balance_syp FROM users'
+      ' WHERE balance_usd > 0 OR balance_syp > 0'
+  )
+  users = cursor.fetchall()
+  conn.close()
+
+  if not users:
+    bot.reply_to(message, 'ℹ️ لا يوجد أي عميل لديه رصيد في محفظته حالياً.')
+    return
+
+  text = '📊 **قائمة العملاء الذين لديهم أرصدة في المحافظ:**\n\n'
+  for u in users:
+    uname = f"@{u['username']}" if u['username'] else 'لا يوجد معرف'
+    text += f"👤 {u['first_name']} ({uname})\n"
+    text += f"🆔 الآيدي: `{u['user_id']}`\n"
+    text += (
+        f'💵 الرصيد: **${u["balance_usd"]:.2f}** | **{u["balance_syp"]:,}'
+        ' ل.س**\n'
+    )
+    text += '-----------------------------------\n'
+
+  if len(text) > 4096:
+    for x in range(0, len(text), 4096):
+      bot.send_message(message.chat.id, text[x : x + 4096], parse_mode='Markdown')
+  else:
+    bot.send_message(message.chat.id, text, parse_mode='Markdown')
+
+
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
 @bot.message_handler(
     func=lambda message: message.text in [
@@ -911,7 +948,7 @@ def chat_menu(call):
 def coming_soon_handler(call):
   bot.answer_callback_query(
       call.id,
-      text='هذه الخدمة ستتوفر قريباً ⏳️ Coming soon',
+      text='هذه الخدمة ستتوفر قريباً ⏳️️ Coming soon',
       show_alert=True,
   )
 
@@ -1446,7 +1483,7 @@ def vpn_menu(call):
       InlineKeyboardButton('🛡️ OPEN VPN', callback_data='vpn_open'),
       InlineKeyboardButton('🛡️ EXPRESS VPN', callback_data='vpn_express'),
       InlineKeyboardButton('🛡️ HOTSPOT SHIELD', callback_data='vpn_hotspot'),
-      InlineKeyboardButton('🛡️ LOKO VPN', callback_data='vpn_loko'),
+      InlineKeyboardButton('🛡️️ LOKO VPN', callback_data='vpn_loko'),
       InlineKeyboardButton(
           '📞 تواصل مع الدعم لطلب بروكسي آخر', callback_data='menu_support'
       ),
@@ -1641,7 +1678,7 @@ def sham_cash_menu(call):
           '🇸🇾 SYP ➡️ 🇺🇸 USD', callback_data='order_Sham_SYP_USD'
       ),
       InlineKeyboardButton(
-          '🇸🇾 SYP ➡️️ 🇪🇺 EUR', callback_data='order_Sham_SYP_EUR'
+          '🇸🇾 SYP ➡ 🇪🇺 EUR', callback_data='order_Sham_SYP_EUR'
       ),
       InlineKeyboardButton(
           ' 🇺🇸 USD ➡️ 🇸🇾 SYP', callback_data='order_Sham_USD_SYP'
