@@ -182,8 +182,7 @@ def handle_client_text_receipt(message):
   except Exception as e:
     print(f'Error forwarding text receipt: {e}')
 
-
-# دالة تتيح للإدارة الرد على العملاء مباشرة عبر الرد (Reply)
+# دالة تتيح للإدارة الرد على العملاء وشحن رصيدهم أو مراسلتهم مباشرة عبر الرد (Reply)
 @bot.message_handler(
     func=lambda message: message.from_user.id == ADMIN_ID
     and message.reply_to_message
@@ -201,6 +200,45 @@ def admin_reply_to_client(message):
       client_id = int(match.group(1))
       admin_text = message.text
 
+      # التحقق مما إذا كان الأدمن يريد شحن رصيد (مثلاً يبدأ النص بكلمة "شحن" أو "deposit")
+      # الصيغة المتوقعة من الأدمن مثال: "شحن 10 USD" أو "شحن 50000 SYP" أو نص عادي
+      if admin_text.startswith(('شحن ', 'deposit ')):
+        parts = admin_text.split()
+        if len(parts) >= 3:
+          try:
+            amount = float(parts[1])
+            currency = parts[2].upper()
+
+            # تهيئة محفظة العميل إذا لم تكن موجودة
+            if client_id not in USER_WALLETS:
+              USER_WALLETS[client_id] = {'USD': 0.0, 'SYP': 0}
+
+            # إضافة الرصيد حسب العملة
+            if currency == 'USD':
+              USER_WALLETS[client_id]['USD'] += amount
+              msg_to_client = f'🎉 **تم شحن محفظتك بنجاح!**\n\nتمت إضافة **${amount:.2f}** إلى رصيدك بالدولار.'
+            elif currency in ['SYP', 'ل.س']:
+              USER_WALLETS[client_id]['SYP'] += int(amount)
+              msg_to_client = f'🎉 **تم شحن محفظتك بنجاح!**\n\nتمت إضافة **{int(amount):,} ل.س** إلى رصيدك بالليرة السورية.'
+            else:
+              msg_to_client = f'🎉 **تحديث بخصوص طلبك من ZEUS:**\n\n{admin_text}'
+
+            # إرسال الرسالة للعميل
+            bot.send_message(
+                client_id,
+                msg_to_client,
+                reply_markup=get_persistent_keyboard(),
+                parse_mode='Markdown',
+            )
+            bot.reply_to(
+                message,
+                f'✅ **تم شحن محفظة العميل ({client_id}) بمبلغ {amount} {currency} بنجاح!**',
+            )
+            return
+          except ValueError:
+            pass
+
+      # الرد العادي إذا لم يكن طلباً للشحن
       bot.send_message(
           client_id,
           f'🎉 **تحديث بخصوص طلبك من ZEUS:**\n\n{admin_text}',
@@ -220,6 +258,7 @@ def admin_reply_to_client(message):
   except Exception as e:
     print(f'Error sending reply to client: {e}')
     bot.reply_to(message, f'❌ حدث خطأ أثناء إرسال الرد: {e}')
+
 
 
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
