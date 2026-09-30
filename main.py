@@ -1,6 +1,8 @@
 import os
 import threading
 import re
+import sqlite3
+from datetime import datetime
 from flask import Flask
 import telebot
 from telebot.types import (
@@ -20,7 +22,7 @@ app = Flask('')
 
 @app.route('/')
 def home():
-  return 'ZEUS-ECHANCE-BOT is running 24/7!'
+  return 'ZEUS-ECHANCE-BOT is running 24/7 with Database!'
 
 
 def run_web_server():
@@ -38,14 +40,104 @@ bot = telebot.TeleBot(TOKEN)
 ADMIN_ID = 1632433018
 
 # ==========================================
+# 🗄️ إعداد قاعدة البيانات المحلية (SQLite) لضمان الأمان وعدم الضياع
+# ==========================================
+def init_db():
+  conn = sqlite3.connect('zeus_database.db', check_same_thread=False)
+  cursor = conn.cursor()
+  
+  # جدول المستخدمين والمحافظ والإحالات
+  cursor.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            user_id INTEGER PRIMARY KEY,
+            first_name TEXT,
+            username TEXT,
+            balance_usd REAL DEFAULT 0.0,
+            balance_syp INTEGER DEFAULT 0,
+            referred_by INTEGER,
+            joined_date TEXT
+        )
+    ''')
+  
+  # جدول الطلبات والمعاملات وسجل العميل
+  cursor.execute('''
+        CREATE TABLE IF NOT EXISTS orders (
+            order_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            service_name TEXT,
+            user_input TEXT,
+            status TEXT DEFAULT 'قيد المراجعة ⏳',
+            created_at TEXT
+        )
+    ''')
+
+  # جدول المعاملات المالية (سجل المحفظة)
+  cursor.execute('''
+        CREATE TABLE IF NOT EXISTS wallet_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            amount_text TEXT,
+            description TEXT,
+            date TEXT
+        )
+    ''')
+
+  # جدول الكوبونات (Promo Codes)
+  cursor.execute('''
+        CREATE TABLE IF NOT EXISTS coupons (
+            code TEXT PRIMARY KEY,
+            amount_usd REAL,
+            is_used INTEGER DEFAULT 0
+        )
+    ''')
+  
+  conn.commit()
+  conn.close()
+
+init_db()
+
+def get_db_connection():
+  conn = sqlite3.connect('zeus_database.db', check_same_thread=False)
+  conn.row_factory = sqlite3.Row
+  return conn
+
+def get_or_create_user(user_id, first_name, username, referred_by=None):
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute('SELECT * FROM users WHERE user_id = ?', (user_id,))
+  user = cursor.fetchone()
+  
+  if not user:
+    now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute('''
+            INSERT INTO users (user_id, first_name, username, balance_usd, balance_syp, referred_by, joined_date)
+            VALUES (?, ?, ?, 0.0, 0, ?, ?)
+        ''', (user_id, first_name, username, referred_by, now))
+    conn.commit()
+    cursor.execute('SELECT * FROM users WHERE user_id = ?', (user_id,))
+    user = cursor.fetchone()
+  
+  conn.close()
+  return user
+
+def update_user_balance(user_id, usd_add=0.0, syp_add=0):
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  cursor.execute('SELECT balance_usd, balance_syp FROM users WHERE user_id = ?', (user_id,))
+  res = cursor.fetchone()
+  if res:
+    new_usd = res['balance_usd'] + usd_add
+    new_syp = res['balance_syp'] + syp_add
+    cursor.execute('UPDATE users SET balance_usd = ?, balance_syp = ? WHERE user_id = ?', (new_usd, new_syp, user_id))
+    conn.commit()
+  conn.close()
+
+# ==========================================
 # 💳 إعدادات المحافظ وطرق الدفع
 # ==========================================
 SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 TRX_WALLET = 'TKva4xbJjCtwGy2vDFAoddsSd91aKZ5zqK'
 PLASMA_WALLET = '0xb027c9b07f2b4ffffcf7a56fc80af180f8692c67'
-
-# قاعدة بيانات بسيطة لتخزين أرصدة العملاء في الذاكرة (يمكن ربطها بقاعدة بيانات لاحقاً)
-USER_WALLETS = {}
 
 # ==========================================
 # 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
@@ -91,8 +183,19 @@ def get_support_markup():
 # دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
+  
+  # حفظ الطلب في قاعدة البيانات بقسم "قيد المراجعة"
+  conn = get_db_connection()
+  cursor = conn.cursor()
+  now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+  cursor.execute('INSERT INTO orders (user_id, service_name, user_input, status, created_at) VALUES (?, ?, ?, ?, ?)',
+                 (user.id, service_name, user_input, 'قيد المراجعة ⏳', now))
+  conn.commit()
+  order_id = cursor.lastrowid
+  conn.close()
+
   notification_text = (
-      f'🚨 طلب جديد بانتظار التحويل والتنفيذ!\n\n'
+      f'🚨 طلب جديد رقم #{order_id} بانتظار التحويل والتنفيذ!\n\n'
       f'👤 اسم العميل: {user.first_name}\n'
       f'🆔 المعرف: @{user.username if user.username else "لا يوجد"}\n'
       f'🔢 الآيدي: {user.id}\n'
@@ -157,6 +260,23 @@ def handle_client_text_receipt(message):
   user = message.from_user
   text_content = message.text
 
+  # التحقق إذا كان النص عبارة عن إدخال كود كوبون نشط
+  if text_content.startswith('COUPON_') or len(text_content.split()) == 1:
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT * FROM coupons WHERE code = ? AND is_used = 0', (text_content.strip(),))
+    coupon = cursor.fetchone()
+    if coupon:
+      amount = coupon['amount_usd']
+      cursor.execute('UPDATE coupons SET is_used = 1 WHERE code = ?', (text_content.strip(),))
+      conn.commit()
+      conn.close()
+      
+      update_user_balance(user.id, usd_add=amount)
+      bot.reply_to(message, f'🎉 **مبروك! تم تفعيل الكوبون بنجاح**\nتمت إضافة **${amount}** إلى رصيدك بالدولار.', parse_mode='Markdown')
+      return
+    conn.close()
+
   notification_text = (
       f'💰 إشعار دفع / رقم عملية تحويل مرسل كنص من عميل!\n\n'
       f'👤 اسم العميل: {user.first_name}\n'
@@ -196,12 +316,13 @@ def admin_reply_to_client(message):
       return
 
     match = re.search(r'🔢 الآيدي:\s*(\d+)', replied_text)
+    match_order = re.search(r'طلب جديد رقم #(\d+)', replied_text)
+    
     if match:
       client_id = int(match.group(1))
       admin_text = message.text
 
-      # التحقق مما إذا كان الأدمن يريد شحن رصيد (مثلاً يبدأ النص بكلمة "شحن" أو "deposit")
-      # الصيغة المتوقعة من الأدمن مثال: "شحن 10 USD" أو "شحن 50000 SYP" أو نص عادي
+      # التحقق مما إذا كان الأدمن يريد شحن رصيد
       if admin_text.startswith(('شحن ', 'deposit ')):
         parts = admin_text.split()
         if len(parts) >= 3:
@@ -209,21 +330,15 @@ def admin_reply_to_client(message):
             amount = float(parts[1])
             currency = parts[2].upper()
 
-            # تهيئة محفظة العميل إذا لم تكن موجودة
-            if client_id not in USER_WALLETS:
-              USER_WALLETS[client_id] = {'USD': 0.0, 'SYP': 0}
-
-            # إضافة الرصيد حسب العملة
             if currency == 'USD':
-              USER_WALLETS[client_id]['USD'] += amount
+              update_user_balance(client_id, usd_add=amount)
               msg_to_client = f'🎉 **تم شحن محفظتك بنجاح!**\n\nتمت إضافة **${amount:.2f}** إلى رصيدك بالدولار.'
             elif currency in ['SYP', 'ل.س']:
-              USER_WALLETS[client_id]['SYP'] += int(amount)
+              update_user_balance(client_id, syp_add=int(amount))
               msg_to_client = f'🎉 **تم شحن محفظتك بنجاح!**\n\nتمت إضافة **{int(amount):,} ل.س** إلى رصيدك بالليرة السورية.'
             else:
               msg_to_client = f'🎉 **تحديث بخصوص طلبك من ZEUS:**\n\n{admin_text}'
 
-            # إرسال الرسالة للعميل
             bot.send_message(
                 client_id,
                 msg_to_client,
@@ -237,6 +352,16 @@ def admin_reply_to_client(message):
             return
           except ValueError:
             pass
+
+      # إذا أراد الأدمن قبول الطلب وتحديث حالته إلى مكتمل
+      if admin_text.startswith('تم التنفيذ') or admin_text.startswith('accept'):
+        if match_order:
+          order_id = match_order.group(1)
+          conn = get_db_connection()
+          cursor = conn.cursor()
+          cursor.execute("UPDATE orders SET status = 'مكتمل ✅' WHERE order_id = ?", (order_id,))
+          conn.commit()
+          conn.close()
 
       # الرد العادي إذا لم يكن طلباً للشحن
       bot.send_message(
@@ -259,6 +384,27 @@ def admin_reply_to_client(message):
     print(f'Error sending reply to client: {e}')
     bot.reply_to(message, f'❌ حدث خطأ أثناء إرسال الرد: {e}')
 
+
+# أمر لإنشاء كوبون للأدمن فقط: /create_coupon <CODE> <AMOUNT_USD>
+@bot.message_handler(commands=['create_coupon'])
+def admin_create_coupon(message):
+  if message.from_user.id != ADMIN_ID:
+    return
+  parts = message.text.split()
+  if len(parts) >= 3:
+    code = parts[1]
+    try:
+      amount = float(parts[2])
+      conn = get_db_connection()
+      cursor = conn.cursor()
+      cursor.execute('INSERT OR REPLACE INTO coupons (code, amount_usd, is_used) VALUES (?, ?, 0)', (code, amount))
+      conn.commit()
+      conn.close()
+      bot.reply_to(message, f'✅ تم إنشاء الكوبون `{code}` بقيمة ${amount} بنجاح.', parse_mode='Markdown')
+    except ValueError:
+      bot.reply_to(message, '❌ خطأ في قيمة المبلغ.')
+  else:
+    bot.reply_to(message, 'ℹ️ الاستخدام الصحيح:\n`/create_coupon CODE 5`', parse_mode='Markdown')
 
 
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
@@ -289,34 +435,32 @@ def handle_persistent_buttons(message):
 
 # دالة عرض المحفظة الخاصة بالعميل
 def show_user_wallet(message):
-  user_id = message.from_user.id
-  user_name = message.from_user.first_name
+  user = message.from_user
+  db_user = get_or_create_user(user.id, user.first_name, user.username)
 
-  # تهيئة رصيد العميل إذا لم يكن موجوداً مسبقاً (يبدأ بـ 0)
-  if user_id not in USER_WALLETS:
-    USER_WALLETS[user_id] = {'USD': 0.0, 'SYP': 0}
-
-  balance_usd = USER_WALLETS[user_id]['USD']
-  balance_syp = USER_WALLETS[user_id]['SYP']
+  balance_usd = db_user['balance_usd']
+  balance_syp = db_user['balance_syp']
 
   wallet_text = (
       f'💰 **محفظتك الشخصية - ZEUS**\n\n'
-      f'👤 صاحب المحفظة: {user_name}\n'
-      f'🆔 الآيدي الخاص بك: `{user_id}`\n\n'
+      f'👤 صاحب المحفظة: {user.first_name}\n'
+      f'🆔 الآيدي الخاص بك: `{user.id}`\n\n'
       f'💵 **الرصيد الحالي:**\n'
       f'• الرصيد بالدولار: **${balance_usd:.2f}**\n'
       f'• الرصيد بالليرة السورية: **{balance_syp:,} ل.س**\n\n'
+      f'🔗 **رابط الإحالة الخاص بك لدعوة أصدقائك:**\n'
+      f'`https://t.me/{bot.get_me().username}?start=ref_{user.id}`\n\n'
       f'💡 **ملاحظة:** لشحن محفظتك، يرجى التواصل مع الدعم الفني أو تحويل المبلغ لأحد محافظنا وإرسال الإشعار للإدارة ليتم إضافته لرصيدك.'
   )
 
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
       InlineKeyboardButton('➕ شحن المحفظة', callback_data='wallet_deposit'),
-      InlineKeyboardButton('📜 سجل المعاملات', callback_data='wallet_history'),
+      InlineKeyboardButton('📜 سجل المعاملات والطلبات', callback_data='wallet_history'),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
 
-  if message.content_type == 'text' and message.text == '💰 محفظتي / My Wallet':
+  if hasattr(message, 'content_type') and message.content_type == 'text' and message.text == '💰 محفظتي / My Wallet':
     bot.send_message(
         message.chat.id,
         wallet_text,
@@ -365,10 +509,19 @@ def handle_wallet_callbacks(call):
         parse_mode='Markdown',
     )
   elif call.data == 'wallet_history':
-    history_text = (
-        '📜 **سجل المعاملات:**\n\n'
-        'لا توجد عمليات سابقة مسجلة في سجلك حتى الآن.'
-    )
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute('SELECT service_name, status, created_at FROM orders WHERE user_id = ? ORDER BY order_id DESC LIMIT 5', (call.from_user.id,))
+    orders = cursor.fetchall()
+    conn.close()
+
+    history_text = '📜 **سجل طلباتك الأخيرة:**\n\n'
+    if orders:
+      for o in orders:
+        history_text += f'• **{o["service_name"]}**\n  الحالة: {o["status"]} | التاريخ: {o["created_at"]}\n\n'
+    else:
+      history_text += 'لا توجد طلبات سابقة مسجلة في سجلك حتى الآن.'
+
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('🔙 رجوع للمحفظة', callback_data='back_wallet'))
     bot.edit_message_text(
@@ -382,42 +535,26 @@ def handle_wallet_callbacks(call):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'back_wallet')
 def back_to_wallet_callback(call):
-  # إعادة عرض واجهة المحفظة عبر الـ callback
-  user_id = call.from_user.id
-  user_name = call.from_user.first_name
-  if user_id not in USER_WALLETS:
-    USER_WALLETS[user_id] = {'USD': 0.0, 'SYP': 0}
-
-  balance_usd = USER_WALLETS[user_id]['USD']
-  balance_syp = USER_WALLETS[user_id]['SYP']
-
-  wallet_text = (
-      f'💰 **محفظتك الشخصية - ZEUS**\n\n'
-      f'👤 صاحب المحفظة: {user_name}\n'
-      f'🆔 الآيدي الخاص بك: `{user_id}`\n\n'
-      f'💵 **الرصيد الحالي:**\n'
-      f'• الرصيد بالدولار: **${balance_usd:.2f}**\n'
-      f'• الرصيد بالليرة السورية: **{balance_syp:,} ل.س**\n\n'
-      f'💡 **ملاحظة:** لشحن محفظتك، يرجى التواصل مع الدعم الفني أو تحويل المبلغ لأحد محافظنا وإرسال الإشعار للإدارة ليتم إضافته لرصيدك.'
-  )
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton('➕ شحن المحفظة', callback_data='wallet_deposit'),
-      InlineKeyboardButton('📜 سجل المعاملات', callback_data='wallet_history'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
-  )
-  bot.edit_message_text(
-      chat_id=call.message.chat.id,
-      message_id=call.message.message_id,
-      text=wallet_text,
-      reply_markup=markup,
-      parse_mode='Markdown',
-  )
+  show_user_wallet(call.message)
 
 
 # أمر البدء الرئيسي /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+  user = message.from_user
+  text_args = message.text.split()
+  referred_by = None
+  
+  if len(text_args) > 1 and text_args[1].startswith('ref_'):
+    try:
+      ref_id = int(text_args[1].replace('ref_', ''))
+      if ref_id != user.id:
+        referred_by = ref_id
+    except ValueError:
+      pass
+
+  get_or_create_user(user.id, user.first_name, user.username, referred_by)
+
   welcome_text = (
       'اهلا بكم في ⚡️ **ZEUS SERVICES -BOT** ⚡️ للخدمات الرقمية الشاملة\n\n'
       'نحن فريق من الأشخاص يمتلك الخبرة لنقدم لك كافه خدمات الشحن والدفع الإلكتروني'
@@ -1348,7 +1485,7 @@ def vpn_open_packages(call):
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='🛡️️ **حزم Open VPN:**',
+      text='🛡 **حزم Open VPN:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
@@ -1504,7 +1641,7 @@ def sham_cash_menu(call):
           '🇸🇾 SYP ➡️ 🇺🇸 USD', callback_data='order_Sham_SYP_USD'
       ),
       InlineKeyboardButton(
-          '🇸🇾 SYP ➡️ 🇪🇺 EUR', callback_data='order_Sham_SYP_EUR'
+          '🇸🇾 SYP ➡️️ 🇪🇺 EUR', callback_data='order_Sham_SYP_EUR'
       ),
       InlineKeyboardButton(
           ' 🇺🇸 USD ➡️ 🇸🇾 SYP', callback_data='order_Sham_USD_SYP'
@@ -1657,5 +1794,5 @@ def process_user_order(message, service_name):
 
 
 if __name__ == '__main__':
-  print('ZEUS Bot is running...')
+  print('ZEUS Bot is running with 10/10 Upgrades...')
   bot.infinity_polling()
