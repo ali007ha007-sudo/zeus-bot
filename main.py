@@ -1,6 +1,8 @@
 import os
 import threading
 import re
+import sqlite3
+from datetime import datetime
 from flask import Flask
 import telebot
 from telebot.types import (
@@ -28,7 +30,7 @@ def run_web_server():
   app.run(host='0.0.0.0', port=port)
 
 
-threading.Thread(target=run_web_server).start()
+threading.Thread(target=run_web_server, daemon=True).start()
 
 # جلب توكن البوت بأمان من إعدادات منصة Render
 TOKEN = os.environ.get('TOKEN')
@@ -38,14 +40,141 @@ bot = telebot.TeleBot(TOKEN)
 ADMIN_ID = 1632433018
 
 # ==========================================
+# 🗄️ إعداد قاعدة بيانات SQLite وحفظ الأرصدة والمعاملات
+# ==========================================
+DB_PATH = os.environ.get('DB_PATH', 'zeus_bot.db')
+
+
+def get_db_connection():
+  conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+  conn.row_factory = sqlite3.Row
+  return conn
+
+
+def init_db():
+  with get_db_connection() as conn:
+    conn.execute("""
+            CREATE TABLE IF NOT EXISTS wallets (
+                user_id INTEGER PRIMARY KEY,
+                balance_usd REAL NOT NULL DEFAULT 0.0,
+                balance_syp INTEGER NOT NULL DEFAULT 0,
+                updated_at TEXT NOT NULL
+            )
+        """)
+    conn.execute("""
+            CREATE TABLE IF NOT EXISTS transactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER NOT NULL,
+                tx_type TEXT NOT NULL,
+                amount_str TEXT NOT NULL,
+                details TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+        """)
+    conn.commit()
+
+
+def ensure_wallet(user_id):
+  now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+  with get_db_connection() as conn:
+    conn.execute(
+        """
+            INSERT OR IGNORE INTO wallets (user_id, balance_usd, balance_syp, updated_at)
+            VALUES (?, 0.0, 0, ?)
+        """,
+        (user_id, now_str),
+    )
+    conn.commit()
+
+
+def get_wallet(user_id):
+  ensure_wallet(user_id)
+  with get_db_connection() as conn:
+    row = conn.execute(
+        'SELECT balance_usd, balance_syp FROM wallets WHERE user_id = ?',
+        (user_id,),
+    ).fetchone()
+    return {
+        'USD': float(row['balance_usd']) if row else 0.0,
+        'SYP': int(row['balance_syp']) if row else 0,
+    }
+
+
+def add_balance(user_id, amount, currency):
+  ensure_wallet(user_id)
+  now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+  currency_upper = currency.upper()
+  with get_db_connection() as conn:
+    if currency_upper == 'USD':
+      conn.execute(
+          """
+                UPDATE wallets
+                SET balance_usd = ROUND(balance_usd + ?, 4), updated_at = ?
+                WHERE user_id = ?
+            """,
+          (float(amount), now_str, user_id),
+      )
+      amt_str = f'+${float(amount):.2f}'
+    elif currency_upper in ['SYP', 'ل.س']:
+      syp_val = int(round(float(amount)))
+      conn.execute(
+          """
+                UPDATE wallets
+                SET balance_syp = balance_syp + ?, updated_at = ?
+                WHERE user_id = ?
+            """,
+          (syp_val, now_str, user_id),
+      )
+      amt_str = f'+{syp_val:,} ل.س'
+    else:
+      return False, ''
+    conn.commit()
+
+  add_transaction(
+      user_id=user_id,
+      tx_type='شحن رصيد',
+      amount_str=amt_str,
+      details='تمت الإضافة بواسطة الإدارة',
+  )
+  return True, amt_str
+
+
+def add_transaction(user_id, tx_type, amount_str, details):
+  now_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+  with get_db_connection() as conn:
+    conn.execute(
+        """
+            INSERT INTO transactions (user_id, tx_type, amount_str, details, created_at)
+            VALUES (?, ?, ?, ?, ?)
+        """,
+        (user_id, tx_type, amount_str, details, now_str),
+    )
+    conn.commit()
+
+
+def get_user_transactions(user_id, limit=10):
+  with get_db_connection() as conn:
+    rows = conn.execute(
+        """
+            SELECT tx_type, amount_str, details, created_at
+            FROM transactions
+            WHERE user_id = ?
+            ORDER BY id DESC
+            LIMIT ?
+        """,
+        (user_id, limit),
+    ).fetchall()
+    return [dict(r) for r in rows]
+
+
+init_db()
+
+# ==========================================
 # 💳 إعدادات المحافظ وطرق الدفع
 # ==========================================
 SHAM_CASH_WALLET = '02d28a07292f2a11f12e0d8e2bd08dd1'
 TRX_WALLET = 'TKva4xbJjCtwGy2vDFAoddsSd91aKZ5zqK'
 PLASMA_WALLET = '0xb027c9b07f2b4ffffcf7a56fc80af180f8692c67'
-
-# قاعدة بيانات بسيطة لتخزين أرصدة العملاء في الذاكرة (يمكن ربطها بقاعدة بيانات لاحقاً)
-USER_WALLETS = {}
 
 # ==========================================
 # 💱 إعدادات سعر الصرف (سعر السوق السوداء - قابل للتعديل)
@@ -59,7 +188,7 @@ def price_text(usd_amount):
   return f'${usd_amount} ({syp_amount:,} ل.س)'
 
 
-# دالة لوحة المفاتيح الثابتة (تظهر دائماً أسفل محادثة العميل) - أُضيف لها زر المحفظة
+# دالة لوحة المفاتيح الثابتة (تظهر دائماً أسفل محادثة العميل)
 def get_persistent_keyboard():
   markup = ReplyKeyboardMarkup(resize_keyboard=True, row_width=2)
   markup.add(
@@ -88,9 +217,21 @@ def get_support_markup():
   return markup
 
 
-# دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة
+# دالة إرسال تفاصيل الطلب الأولي إلى حسابك الشخصي مباشرة وتسجيله في سجل المعاملات
 def send_order_to_admin(message, service_name, user_input):
   user = message.from_user
+
+  # استخراج السعر بالدولار إن وُجد في اسم الخدمة لتسجيله في السجل
+  price_match = re.search(r'\$([0-9]+(?:\.[0-9]+)?)', service_name)
+  amount_label = f'${price_match.group(1)}' if price_match else 'بانتظار التسعير'
+
+  add_transaction(
+      user_id=user.id,
+      tx_type='طلب خدمة',
+      amount_str=amount_label,
+      details=f'{service_name} ({user_input})',
+  )
+
   notification_text = (
       f'🚨 طلب جديد بانتظار التحويل والتنفيذ!\n\n'
       f'👤 اسم العميل: {user.first_name}\n'
@@ -182,6 +323,7 @@ def handle_client_text_receipt(message):
   except Exception as e:
     print(f'Error forwarding text receipt: {e}')
 
+
 # دالة تتيح للإدارة الرد على العملاء وشحن رصيدهم أو مراسلتهم مباشرة عبر الرد (Reply)
 @bot.message_handler(
     func=lambda message: message.from_user.id == ADMIN_ID
@@ -200,8 +342,7 @@ def admin_reply_to_client(message):
       client_id = int(match.group(1))
       admin_text = message.text
 
-      # التحقق مما إذا كان الأدمن يريد شحن رصيد (مثلاً يبدأ النص بكلمة "شحن" أو "deposit")
-      # الصيغة المتوقعة من الأدمن مثال: "شحن 10 USD" أو "شحن 50000 SYP" أو نص عادي
+      # الصيغة المتوقعة: "شحن 10 USD" أو "شحن 50000 SYP" أو "deposit 10 USD"
       if admin_text.startswith(('شحن ', 'deposit ')):
         parts = admin_text.split()
         if len(parts) >= 3:
@@ -209,32 +350,36 @@ def admin_reply_to_client(message):
             amount = float(parts[1])
             currency = parts[2].upper()
 
-            # تهيئة محفظة العميل إذا لم تكن موجودة
-            if client_id not in USER_WALLETS:
-              USER_WALLETS[client_id] = {'USD': 0.0, 'SYP': 0}
+            if amount <= 0:
+              bot.reply_to(message, '⚠️ يجب أن يكون المبلغ أكبر من صفر.')
+              return
 
-            # إضافة الرصيد حسب العملة
-            if currency == 'USD':
-              USER_WALLETS[client_id]['USD'] += amount
-              msg_to_client = f'🎉 **تم شحن محفظتك بنجاح!**\n\nتمت إضافة **${amount:.2f}** إلى رصيدك بالدولار.'
-            elif currency in ['SYP', 'ل.س']:
-              USER_WALLETS[client_id]['SYP'] += int(amount)
-              msg_to_client = f'🎉 **تم شحن محفظتك بنجاح!**\n\nتمت إضافة **{int(amount):,} ل.س** إلى رصيدك بالليرة السورية.'
-            else:
-              msg_to_client = f'🎉 **تحديث بخصوص طلبك من ZEUS:**\n\n{admin_text}'
+            ok, _ = add_balance(client_id, amount, currency)
+            if ok:
+              if currency == 'USD':
+                msg_to_client = (
+                    f'🎉 **تم شحن محفظتك بنجاح!**\n\n'
+                    f'تمت إضافة **${amount:.2f}** إلى رصيدك بالدولار.'
+                )
+              elif currency in ['SYP', 'ل.س']:
+                msg_to_client = (
+                    f'🎉 **تم شحن محفظتك بنجاح!**\n\n'
+                    f'تمت إضافة **{int(amount):,} ل.س** إلى رصيدك بالليرة السورية.'
+                )
+              else:
+                msg_to_client = f'🎉 **تحديث بخصوص طلبك من ZEUS:**\n\n{admin_text}'
 
-            # إرسال الرسالة للعميل
-            bot.send_message(
-                client_id,
-                msg_to_client,
-                reply_markup=get_persistent_keyboard(),
-                parse_mode='Markdown',
-            )
-            bot.reply_to(
-                message,
-                f'✅ **تم شحن محفظة العميل ({client_id}) بمبلغ {amount} {currency} بنجاح!**',
-            )
-            return
+              bot.send_message(
+                  client_id,
+                  msg_to_client,
+                  reply_markup=get_persistent_keyboard(),
+                  parse_mode='Markdown',
+              )
+              bot.reply_to(
+                  message,
+                  f'✅ **تم شحن محفظة العميل ({client_id}) بمبلغ {amount} {currency} وحفظه في قاعدة البيانات!**',
+              )
+              return
           except ValueError:
             pass
 
@@ -258,7 +403,6 @@ def admin_reply_to_client(message):
   except Exception as e:
     print(f'Error sending reply to client: {e}')
     bot.reply_to(message, f'❌ حدث خطأ أثناء إرسال الرد: {e}')
-
 
 
 # استجابة أزرار لوحة المفاتيح الثابتة أسفل الشاشة
@@ -287,17 +431,10 @@ def handle_persistent_buttons(message):
     show_user_wallet(message)
 
 
-# دالة عرض المحفظة الخاصة بالعميل
-def show_user_wallet(message):
-  user_id = message.from_user.id
-  user_name = message.from_user.first_name
-
-  # تهيئة رصيد العميل إذا لم يكن موجوداً مسبقاً (يبدأ بـ 0)
-  if user_id not in USER_WALLETS:
-    USER_WALLETS[user_id] = {'USD': 0.0, 'SYP': 0}
-
-  balance_usd = USER_WALLETS[user_id]['USD']
-  balance_syp = USER_WALLETS[user_id]['SYP']
+def build_wallet_view(user_id, user_name):
+  wallet = get_wallet(user_id)
+  balance_usd = wallet['USD']
+  balance_syp = wallet['SYP']
 
   wallet_text = (
       f'💰 **محفظتك الشخصية - ZEUS**\n\n'
@@ -306,7 +443,7 @@ def show_user_wallet(message):
       f'💵 **الرصيد الحالي:**\n'
       f'• الرصيد بالدولار: **${balance_usd:.2f}**\n'
       f'• الرصيد بالليرة السورية: **{balance_syp:,} ل.س**\n\n'
-      f'💡 **ملاحظة:** لشحن محفظتك، يرجى التواصل مع الدعم الفني أو تحويل المبلغ لأحد محافظنا وإرسال الإشعار للإدارة ليتم إضافته لرصيدك.'
+      f'💡 **ملاحظة:** لشحن محفظتك، يرجى تحويل المبلغ لأحد محافظنا وإرسال الإشعار للإدارة ليتم إضافته لرصيدك وحفظه تلقائياً.'
   )
 
   markup = InlineKeyboardMarkup(row_width=1)
@@ -315,6 +452,14 @@ def show_user_wallet(message):
       InlineKeyboardButton('📜 سجل المعاملات', callback_data='wallet_history'),
       InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
   )
+  return wallet_text, markup
+
+
+# دالة عرض المحفظة الخاصة بالعميل
+def show_user_wallet(message):
+  user_id = message.from_user.id
+  user_name = message.from_user.first_name
+  wallet_text, markup = build_wallet_view(user_id, user_name)
 
   if message.content_type == 'text' and message.text == '💰 محفظتي / My Wallet':
     bot.send_message(
@@ -365,10 +510,22 @@ def handle_wallet_callbacks(call):
         parse_mode='Markdown',
     )
   elif call.data == 'wallet_history':
-    history_text = (
-        '📜 **سجل المعاملات:**\n\n'
-        'لا توجد عمليات سابقة مسجلة في سجلك حتى الآن.'
-    )
+    tx_list = get_user_transactions(call.from_user.id, limit=10)
+    if not tx_list:
+      history_text = (
+          '📜 **سجل المعاملات:**\n\n'
+          'لا توجد عمليات سابقة مسجلة في سجلك حتى الآن.'
+      )
+    else:
+      lines = ['📜 **سجل المعاملات (آخر 10 عمليات):**\n']
+      for idx, tx in enumerate(tx_list, start=1):
+        lines.append(
+            f"{idx}. **{tx['tx_type']}** — `{tx['amount_str']}`\n"
+            f"   📌 {tx['details']}\n"
+            f"   🕒 {tx['created_at']}"
+        )
+      history_text = '\n\n'.join(lines)
+
     markup = InlineKeyboardMarkup()
     markup.add(InlineKeyboardButton('🔙 رجوع للمحفظة', callback_data='back_wallet'))
     bot.edit_message_text(
@@ -382,29 +539,8 @@ def handle_wallet_callbacks(call):
 
 @bot.callback_query_handler(func=lambda call: call.data == 'back_wallet')
 def back_to_wallet_callback(call):
-  # إعادة عرض واجهة المحفظة عبر الـ callback
-  user_id = call.from_user.id
-  user_name = call.from_user.first_name
-  if user_id not in USER_WALLETS:
-    USER_WALLETS[user_id] = {'USD': 0.0, 'SYP': 0}
-
-  balance_usd = USER_WALLETS[user_id]['USD']
-  balance_syp = USER_WALLETS[user_id]['SYP']
-
-  wallet_text = (
-      f'💰 **محفظتك الشخصية - ZEUS**\n\n'
-      f'👤 صاحب المحفظة: {user_name}\n'
-      f'🆔 الآيدي الخاص بك: `{user_id}`\n\n'
-      f'💵 **الرصيد الحالي:**\n'
-      f'• الرصيد بالدولار: **${balance_usd:.2f}**\n'
-      f'• الرصيد بالليرة السورية: **{balance_syp:,} ل.س**\n\n'
-      f'💡 **ملاحظة:** لشحن محفظتك، يرجى التواصل مع الدعم الفني أو تحويل المبلغ لأحد محافظنا وإرسال الإشعار للإدارة ليتم إضافته لرصيدك.'
-  )
-  markup = InlineKeyboardMarkup(row_width=1)
-  markup.add(
-      InlineKeyboardButton('➕ شحن المحفظة', callback_data='wallet_deposit'),
-      InlineKeyboardButton('📜 سجل المعاملات', callback_data='wallet_history'),
-      InlineKeyboardButton('🔙 القائمة الرئيسية', callback_data='back_home'),
+  wallet_text, markup = build_wallet_view(
+      call.from_user.id, call.from_user.first_name
   )
   bot.edit_message_text(
       chat_id=call.message.chat.id,
@@ -418,6 +554,7 @@ def back_to_wallet_callback(call):
 # أمر البدء الرئيسي /start
 @bot.message_handler(commands=['start'])
 def send_welcome(message):
+  ensure_wallet(message.from_user.id)
   welcome_text = (
       'اهلا بكم في ⚡️ **ZEUS SERVICES -BOT** ⚡️ للخدمات الرقمية الشاملة\n\n'
       'نحن فريق من الأشخاص يمتلك الخبرة لنقدم لك كافه خدمات الشحن والدفع الإلكتروني'
@@ -427,7 +564,9 @@ def send_welcome(message):
 
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
-      InlineKeyboardButton('💰 محفظتي الشخصية / My Wallet', callback_data='menu_wallet_inline'),
+      InlineKeyboardButton(
+          '💰 محفظتي الشخصية / My Wallet', callback_data='menu_wallet_inline'
+      ),
       InlineKeyboardButton('1️⃣ الألعاب / GAMES 🎮', callback_data='menu_games'),
       InlineKeyboardButton(
           '2️⃣ الذكاء الاصطناعي / AI 💭', callback_data='menu_ai'
@@ -477,7 +616,24 @@ def send_welcome(message):
 # زر المحفظة من القائمة الرئيسية (Inline)
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_wallet_inline')
 def menu_wallet_inline_handler(call):
-  show_user_wallet(call.message)
+  wallet_text, markup = build_wallet_view(
+      call.from_user.id, call.from_user.first_name
+  )
+  try:
+    bot.edit_message_text(
+        chat_id=call.message.chat.id,
+        message_id=call.message.message_id,
+        text=wallet_text,
+        reply_markup=markup,
+        parse_mode='Markdown',
+    )
+  except Exception:
+    bot.send_message(
+        call.message.chat.id,
+        wallet_text,
+        reply_markup=markup,
+        parse_mode='Markdown',
+    )
 
 
 # زر العودة للقائمة الرئيسية
@@ -489,7 +645,9 @@ def back_home(call):
   )
   markup = InlineKeyboardMarkup(row_width=1)
   markup.add(
-      InlineKeyboardButton('💰 محفظتي الشخصية / My Wallet', callback_data='menu_wallet_inline'),
+      InlineKeyboardButton(
+          '💰 محفظتي الشخصية / My Wallet', callback_data='menu_wallet_inline'
+      ),
       InlineKeyboardButton('1️⃣ الألعاب / GAMES 🎮', callback_data='menu_games'),
       InlineKeyboardButton(
           '2️⃣ الذكاء الاصطناعي / AI 💭', callback_data='menu_ai'
@@ -688,7 +846,7 @@ def game_packages(call):
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text=f'🎮 **حزم قسم الألعاب:**',
+      text='🎮 **حزم قسم الألعاب:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
@@ -1119,7 +1277,7 @@ def likee_packages(call):
   )
 
 
-# --- 4. تعبئة الرصيد / RECHARGE (محدث بالخيارات الجديدة) ---
+# --- 4. تعبئة الرصيد / RECHARGE ---
 @bot.callback_query_handler(func=lambda call: call.data == 'menu_recharge')
 def recharge_menu(call):
   markup = InlineKeyboardMarkup(row_width=1)
@@ -1348,7 +1506,7 @@ def vpn_open_packages(call):
   bot.edit_message_text(
       chat_id=call.message.chat.id,
       message_id=call.message.message_id,
-      text='🛡️️ **حزم Open VPN:**',
+      text='🛡 **حزم Open VPN:**',
       reply_markup=markup,
       parse_mode='Markdown',
   )
